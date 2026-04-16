@@ -1,7 +1,7 @@
 
 # 🧬 Chimera V2 & Substrate
 
-### The Sovereign Reactivity Engine.
+### The Supercharged Reactivity Engine.
  **Chimera V2** is a zero-dependency, meta-programming framework designed for high-performance UI and data-intensive applications. It fuses the ergonomics of ES6 classes with **Substrate**, 
 a low-level reactive engine that manages dependencies in a fixed-memory **Typed Array Arena**.
 
