@@ -71,10 +71,7 @@ By using `Uint32Array` buffers for the edge graph, Substrate reduces the "Engine
 
 ---
 
-```
-
-
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
