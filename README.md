@@ -39,7 +39,7 @@ import { $ } from './Chimera-2.js';
 const el = $(document.getElementById('counter'));
 el.$count = 0; // Initialize reactive signal
 
-el.$.effect(() => {
+el.$(() => {
     el.textContent = `Clicks: ${el.$count}`;
 });
 ```
