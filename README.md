@@ -12,7 +12,7 @@ Most reactivity libraries suffer from **Garbage Collector Thrashing** because ev
 * **Fixed Memory:** Allocates `Uint32Arrays` for edges and signals, bypassing the JS Heap.
 * **Pointer-Based Triggers:** Traversing dependencies is a simple memory-offset jump, allowing for $O(1)$ trigger complexity.
 * **Lazy Computeds:** Utilizes a `STALE` flag system to defer calculations until the exact moment of access.
-* **Automatic Disposal:** Integrated with `FinalizationRegistry` and a `requestIdleCallback` poller to clean up disconnected DOM nodes.
+* **Automatic Disposal:** Integrated with `FinalizationRegistry` and a `requestIdleCallback` poller to clean up stale objects / disconnected DOM nodes.
 
 ---
 
