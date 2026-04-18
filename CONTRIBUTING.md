@@ -14,5 +14,3 @@ Litecoin: ltc1qc2gh0xtvlt9pgxdpqrhfpulupueq7na90le8rf
 ^^^^
 
 GUARANTEED PROOF OF TRANSACTION. NO CHARGEBACKS. ATOMIC. I CANNOT LIE ABOUT FUNDS AND NEITHER CAN YOU. 
-
-"Crypto is a scam" - you're a boomer if you think that
