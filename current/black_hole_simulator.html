@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Black Hole Simulator | Chimera V6.5.2</title>
+    <style>
+        body { margin: 0; background: #020617; color: #10b981; font-family: monospace; overflow: hidden; }
+        canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        #stats { 
+            position: absolute; top: 1rem; left: 1rem; background: rgba(15, 23, 42, 0.95); 
+            padding: 1.5rem; border: 1px solid #047857; border-radius: 8px; z-index: 10; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8); width: 320px;
+        }
+        .val { color: #f8fafc; font-weight: bold; }
+        .control-group { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        label { font-size: 0.9rem; color: #94a3b8; display: flex; flex-direction: column; gap: 0.3rem; }
+        .checkbox-label { flex-direction: row; align-items: center; cursor: pointer; color: #f8fafc; }
+        input[type=range] { width: 100%; accent-color: #10b981; cursor: pointer; }
+        
+        button { 
+            background: #10b981; color: #020617; border: none; padding: 0.6rem; 
+            cursor: pointer; font-weight: bold; border-radius: 4px; font-family: monospace;
+            text-transform: uppercase; transition: all 0.2s;
+        }
+        button:hover { background: #34d399; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        button:active { transform: scale(0.95); }
+
+        #densBtn { background: #0ea5e9; margin-top: 0.5rem; }
+        #densBtn:hover { background: #38bdf8; }
+        
+        .density-box {
+            margin-top: 0.5rem; padding: 0.5rem; border-radius: 4px;
+            background: rgba(2, 6, 23, 0.5); border: 1px solid #1e293b;
+            font-size: 0.85rem;
+        }
+
+        .canary-box {
+            margin-top: 1rem; border: 1px solid #ef4444; padding: 0.5rem; border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        #heartbeat {
+            font-weight: bold; text-align: center; padding: 0.3rem; 
+            background: #7f1d1d; color: #f8fafc; transition: background 0.05s;
+            border-radius: 2px;
+            display: none;
+        }
+        .lag-input {
+            background: #020617; color: #10b981; border: 1px solid #047857; 
+            padding: 0.4rem; font-family: monospace; width: 100%; box-sizing: border-box;
+        }
+    </style>
+    <script>
+    </script>
+    <!--
+       put the nightly file in your current directory, for example:
+      folder/ black_hole_simulator.html
+            / Chimera-6.5.2-nightly.js
+    -->
+    <script src="./Chimera-6.5.2-nightly.js"></script>
+</head>
+<body>
+
+<div id="stats">
+    <div style="color: #6ee7b7; font-weight: bold; margin-bottom: 0.5rem;">Single Threaded Reactivity</div>
+    <div>Each particle is a fully reactive, closure-bound effect.</div>
+    <br>
+    <div>Move the mouse to collect particles. Eventually, they will cross the event horizon.</div>
+    <br>
+    <div>Slots Active: <span class="val" id="count">0</span></div>
+    <div>Arena Limit: <span class="val">1,048,575</span></div>
+    <div class="density-box">
+        Global Substrate Density: <span class="val" id="densDisp" style="color: #38bdf8;">0.00%</span>
+    </div>
+    <hr style="border-color: #047857; margin: 1rem 0;">
+    <div>Logic Time: <span class="val" id="logic" style="transition: color 0.2s;">0.00ms</span></div>
+    <div style="font-size: 1.2rem; margin-top: 0.3rem;">FPS: <span class="val" id="fps">0</span></div>
+
+    <div class="control-group">
+        <label>
+            Particle Count (Stress Test Limit): <span class="val" id="pCountLabel">60000</span>
+            <input type="range" id="pSlider" min="1000" max="1000000" step="5000" value="60000">
+        </label>
+
+        <label>
+            Collapse Threshold: <span class="val" id="threshLabel">20%</span>
+            <input type="range" id="tSlider" min="5" max="100" step="1" value="20">
+        </label>
+        
+        <div style="background: rgba(30,60,90,0.5); padding: 0.8rem; border: 1px solid #047857; box-shadow: 0px 0px 5px #030; border-radius: 4px; margin-top: 0.5rem;">
+            Horizon Load: <span class="val" id="horizonCount" style="color: cyan !important;">0</span> 
+            <span style="color: #ffcc00;">/ <span id="threshTarget">18000</span></span>
+        </div>
+        <label class="checkbox-label">
+            <input type="checkbox" id="unwrapTrigger" checked>
+            Bypass Proxy Tax (.φ)
+        </label>
+        
+        <button id="resetBtn">Apply & Restart</button>
+        <button id="densBtn" style = 'display: none'>Analyze Substrate Density</button>
+        <button id="explainBtn" style="background: #8b5cf6; margin-top: 0.5rem; color: white;">Why is 200k so fast?</button>
+    </div>
+</div>
+
+<!-- THE CACHE EXPLANATION OVERLAY -->
+<div id="cacheOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 6, 23, 0.2); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+    <div style="background: #0f172a; border: 2px solid #8b5cf6; padding: 2rem; border-radius: 8px; width: 650px; max-width: 90vw; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <h2 style="color: #a78bfa; margin-top: 0; font-size: 1.5rem;">The Integer Arena & Spatial Locality</h2>
+        <p style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">
+            Why didn't 200,000 particles crash the main thread? Because we bypassed the JavaScript garbage collector and leveraged <strong>CPU Caching</strong>. By writing pixel data to a flat, sequential <code>Uint32Array</code>, we unlocked <strong>Spatial Locality</strong>.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin: 2rem 0; text-align: center; font-weight: bold; font-size: 0.85rem;">
+            <div style="flex: 1; background: #1e293b; padding: 1rem; border: 1px solid #475569; border-radius: 4px; color: #94a3b8;">
+                MAIN MEMORY<br><span style="font-size: 0.7rem; font-weight: normal;">Massive, but very slow.</span>
+            </div>
+            <div style="color: #8b5cf6; padding: 0 10px;">➔<br><span style="font-size: 0.6rem;">Fetches Chunk</span></div>
+            <div style="flex: 0.8; background: #334155; padding: 1rem; border: 1px solid #64748b; border-radius: 4px; color: #cbd5e1;">
+                L2 CACHE<br><span style="font-size: 0.7rem; font-weight: normal;">Staging Area.</span>
+            </div>
+            <div style="color: #8b5cf6; padding: 0 10px;">➔<br><span style="font-size: 0.6rem;">Cache Line</span></div>
+            <div style="flex: 0.6; background: #8b5cf6; padding: 1rem; border: 1px solid #a78bfa; border-radius: 4px; color: #ffffff;">
+                L1 CACHE<br><span style="font-size: 0.7rem; font-weight: normal;">Ultra-fast.</span>
+            </div>
+            <div style="color: #10b981; padding: 0 10px;">➔</div>
+            <div style="flex: 0.5; background: #10b981; padding: 1rem; border: 1px solid #34d399; border-radius: 4px; color: #020617;">
+                CPU<br><span style="font-size: 0.7rem; font-weight: normal;">Core</span>
+            </div>
+        </div>
+        <p style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">
+            When the CPU asks for Particle #1, it doesn't just grab one integer from RAM. It pulls an entire <strong>Cache Line</strong> into the ultra-fast L1 Cache. Because our arena is sequential, Particles #2, #3, and #4 are already sitting in the L1 Cache waiting to be processed. <strong>Zero latency.</strong>
+        </p>
+        <button id="closeOverlayBtn" style="background: #ef4444; width: 100%; margin-top: 1rem; font-size: 1rem;">Close Explanation</button>
+    </div>
+</div>
+
+<canvas id="view"></canvas>
+
+<script>
+// ─── 1. RENDERING SETUP ──────────────────────────────────────────
+const canvas = document.getElementById('view');
+const ctx = canvas.getContext('2d', { alpha: false });
+const width = canvas.width = window.innerWidth;
+const height = canvas.height = window.innerHeight;
+const img = ctx.createImageData(width, height);
+const data = new Uint32Array(img.data.buffer);
+
+const offscreen = document.createElement('canvas');
+offscreen.width = width; offscreen.height = height;
+const offCtx = offscreen.getContext('2d');
+
+const RAINBOW = new Uint32Array(360);
+for (let i = 0; i < 360; i++) {
+    const r = Math.sin(0.0174 * i + 0) * 127 + 128;
+    const g = Math.sin(0.0174 * i + 2) * 127 + 128;
+    const b = Math.sin(0.0174 * i + 4) * 127 + 128;
+    RAINBOW[i] = (0xFF << 24) | (b << 16) | (g << 8) | r;
+}
+
+let mx = -1000, my = -1000;
+window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+
+
+// ─── 2. SIMULATION STATE ──────────────────────────────────────────
+let eng = null;
+let frameTrigger = null;
+const TRIGGER_THRESHOLD = 15000;
+const TIME_TO_COLLAPSE = 216;
+const RADIUS = 12000;
+let blackHoles = [];
+let densityTimer = 0;
+let currentNearCount = 0;
+
+function buildSimulation(count, unwrapped) {
+    if (eng) {
+        eng.dispose();
+        Substrate.subtle.forceGC();
+    }
+
+    eng = new Substrate('massive');
+    frameTrigger = eng.signal(0);
+
+    blackHoles = [];
+    densityTimer = 0;
+
+    for (let i = 0; i < count; i++) {
+        // Deliberately keeping these in closure to stress test memory management
+        let x = Math.random() * width, y = Math.random() * height;
+        let vx = (Math.random() - 0.5) * 2, vy = (Math.random() - 0.5) * 2;
+        let hue = Math.random() * 360;
+        let isTrapped = false;
+
+        eng.effect(() => {
+            frameTrigger.get();
+            
+            for (let j = 0; j < blackHoles.length; j++) {
+                const bh = blackHoles[j];
+                let bdx = bh.x - x, bdy = bh.y - y;
+                let bDistSq = bdx * bdx + bdy * bdy;
+                if (bDistSq < 1500) isTrapped = true;
+                if (isTrapped) {
+                    vx = bdy * 0.15; vy = -bdx * 0.15;
+                    x += (bh.x - x) * 0.05; y += (bh.y - y) * 0.05;
+                    hue += 10; break;
+                } else {
+                    // Boosted from 1500 to 8000 so black holes clear the screen quickly
+                    let bhForce = 8000 / (bDistSq + 200);
+                    vx += bdx * bhForce * 0.05; 
+                    vy += bdy * bhForce * 0.05;
+                }
+            }
+
+            if (!isTrapped) {
+                let mdx = mx - x, mdy = my - y;
+                let mDistSq = mdx * mdx + mdy * mdy;
+                if (mDistSq < RADIUS) {
+                    currentNearCount++; 
+                    let force = (RADIUS - mDistSq) / RADIUS;
+                    vx += mdx * force * 0.007; vy += mdy * force * 0.007;
+                    vx *= 0.96; vy *= 0.96;
+                }
+                vx *= 0.999; vy *= 0.999;
+                x += vx; y += vy;
+                
+                // The modulo fix: Subtraction instead of division limits CPU cycles
+                hue += 0.3; 
+                if (hue >= 360) hue -= 360; 
+
+                if (x < 0 || x > width) vx *= -0.5;
+                if (y < 0 || y > height) vy *= -0.5;
+            } else { x += vx; y += vy; }
+
+            let px = x | 0; let py = y | 0;
+            if (px >= 0 && px < width && py >= 0 && py < height) {
+                // Bitwise OR for color index lookup
+                data[py * width + px] = isTrapped ? 0xFFFFFFFF : RAINBOW[hue | 0];
+            }
+        }, false);
+    }
+    
+    updateStatsDisplay();
+}
+
+function updateStatsDisplay() {
+    const stats = Substrate.subtle.stats;
+    document.getElementById('count').textContent = `${stats.slotsActive}`; //  | (Zombies: ${stats.zombies}) no zombies, it's not GC'd
+}
+
+// ─── 3. UI EVENT LISTENERS ────────────────────────────────────────
+const slider = document.getElementById('pSlider');
+const countLabel = document.getElementById('pCountLabel');
+const resetBtn = document.getElementById('resetBtn');
+const densBtn = document.getElementById('densBtn');
+const densDisp = document.getElementById('densDisp');
+
+const cacheOverlay = document.getElementById('cacheOverlay');
+const explainBtn = document.getElementById('explainBtn');
+const closeOverlayBtn = document.getElementById('closeOverlayBtn');
+
+explainBtn.addEventListener('click', () => { cacheOverlay.style.display = 'flex'; });
+closeOverlayBtn.addEventListener('click', () => { cacheOverlay.style.display = 'none'; });
+cacheOverlay.addEventListener('click', (e) => { if (e.target === cacheOverlay) cacheOverlay.style.display = 'none'; });
+
+
+let thresholdPercent = 30;
+let thresholdTarget = 18000;
+
+const tSlider = document.getElementById('tSlider');
+const threshLabel = document.getElementById('threshLabel');
+const horizonCountDisp = document.getElementById('horizonCount');
+const threshTargetDisp = document.getElementById('threshTarget');
+
+tSlider.addEventListener('input', (e) => {
+    thresholdPercent = e.target.value;
+    threshLabel.textContent = thresholdPercent + '%';
+    updateThresholdTarget();
+});
+
+function updateThresholdTarget() {
+    const currentParticles = parseInt(document.getElementById('pSlider').value);
+    thresholdTarget = Math.floor(currentParticles * (thresholdPercent / 100));
+    threshTargetDisp.textContent = thresholdTarget;
+}
+
+// Make sure to hook this into your reset button so the target recalculates
+resetBtn.addEventListener('click', () => {
+    buildSimulation(parseInt(slider.value), document.getElementById('unwrapTrigger').checked);
+    updateThresholdTarget(); // <-- Add this
+});
+
+// Run once on boot
+updateThresholdTarget();
+
+
+
+
+slider.addEventListener('input', (e) => { countLabel.textContent = e.target.value; });
+
+resetBtn.addEventListener('click', () => {
+    buildSimulation(parseInt(slider.value), document.getElementById('unwrapTrigger').checked);
+});
+
+densBtn.addEventListener('click', () => {
+    const d = (eng.density * 100).toFixed(2);
+    densDisp.textContent = d + '%';
+    densDisp.style.color = eng.density > 0.8 ? '#ef4444' : '#38bdf8';
+});
+
+// ─── 4. MAIN LOOP ───────────────────────────────────────────────────
+const logicDisplay = document.getElementById('logic');
+const fpsDisplay = document.getElementById('fps');
+let lastTime = performance.now();
+let frames = 0;
+
+function loop() {
+    const start = performance.now();
+    
+    // 1. Clear backbuffer & reset sensors
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; 
+    ctx.fillRect(0, 0, width, height);
+    data.fill(0); 
+    currentNearCount = 0; // MUST reset before the engine ticks!
+    
+    // 2. Tick the engine (All 60,000 particles execute here)
+    frameTrigger.set(start);
+
+    // 3. Render Particles First (Blit raw pixel data to canvas)
+    offCtx.putImageData(img, 0, 0);
+    ctx.drawImage(offscreen, 0, 0);
+
+
+    // 3.5 Draw the Black Holes & Halos (Interstellar Style)
+    // 3.5 Draw the Black Holes & Halos (Supernova Implosion Style)
+    for (let i = 0; i < blackHoles.length; i++) {
+        const bh = blackHoles[i];
+        bh.age++; // Advance the lifecycle
+        
+        let scale = 1;
+
+        // PHASE 1: The Crush (Frames 1-30)
+        if (bh.age < 30) {
+            const p = bh.age / 30; // Progress from 0 to 1
+            // Cubic ease-in makes the collapse accelerate violently at the end
+            const easeIn = Math.pow(p, 3);
+            const shrinkRadius = Math.max(1, 150 * (1 - easeIn)); 
+            
+            ctx.beginPath();
+            ctx.arc(bh.x, bh.y, shrinkRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; // Pure solid white matter crushing down
+            ctx.fill();
+            
+            scale = 0; // Hide the black hole during implosion
+        } 
+        // PHASE 2: The Supernova Shockwave (Frames 30-60)
+        else if (bh.age < 60) {
+            const p = (bh.age - 30) / 30; // Progress from 0 to 1
+            const shockwaveRadius = p * Math.max(width, height); // Expands to cover the screen
+            const opacity = 1 - Math.pow(p, 2); // Fades out quadratically
+            
+            // Outer purple force field
+            ctx.beginPath();
+            ctx.arc(bh.x, bh.y, shockwaveRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(161, 4, 255, ${opacity * 0.8})`; 
+            ctx.lineWidth = 15 * (1 - p); 
+            ctx.stroke();
+
+            // Inner white shockwave
+            ctx.beginPath();
+            ctx.arc(bh.x, bh.y, shockwaveRadius * 0.95, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`; 
+            ctx.lineWidth = 30 * (1 - p);
+            ctx.stroke();
+            
+            scale = 0; // Keep the core hidden during the blast
+        }
+        // PHASE 3: The Expansion (Frames 60-120)
+        else if (bh.age < 120) {
+            const p = (bh.age - 60) / 60; // Progress from 0 to 1
+            scale = 1 - Math.pow(1 - p, 4); // Smooth ease-out explosion of the accretion disk
+        }
+
+        // PHASE 4: The Gargantua Rendering
+        if (scale > 0) {
+            ctx.save();
+            ctx.translate(bh.x, bh.y);
+            ctx.scale(scale, scale);
+
+            // 1. The Gravitational Lens Glow (Purple/Orange sphere)
+            const lensGrad = ctx.createRadialGradient(0, 0, 35, 0, 0, 100);
+            lensGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');      // White hot edge
+            lensGrad.addColorStop(0.1, 'rgba(161, 4, 255, 0.9)');    // The #a104ff purple halo
+            lensGrad.addColorStop(0.5, 'rgba(251, 146, 60, 0.4)');   // Fading orange gas
+            lensGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.beginPath();
+            ctx.arc(0, 0, 100, 0, Math.PI * 2);
+            ctx.fillStyle = lensGrad;
+            ctx.fill();
+
+            // 2. The Accretion Disk (Flat rotating ellipse)
+            ctx.rotate((bh.age - 60) * 0.015); // Spins slowly over time
+            
+            const diskGrad = ctx.createRadialGradient(0, 0, 35, 0, 0, 120);
+            diskGrad.addColorStop(0, 'rgba(161, 4, 255, 0)');        // Transparent center
+            diskGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.9)');  // Bright inner ring
+            diskGrad.addColorStop(0.6, 'rgba(251, 146, 60, 0.6)');   // Orange mid ring
+            diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');            // Fade to space
+            
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 120, 25, 0, 0, Math.PI * 2); 
+            ctx.fillStyle = diskGrad;
+            ctx.fill();
+
+            // 3. The Event Horizon (Pure Black Core)
+            ctx.beginPath();
+            ctx.arc(0, 0, 38, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            
+            // 4. The Photon Ring (Razor thin white line just outside the horizon)
+            ctx.beginPath();
+            ctx.arc(0, 0, 40, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+    }
+
+    // 4. --- UPDATED BLACK HOLE TRIGGER LOGIC ---
+    
+    // A. Live DOM Update for the tracker
+    horizonCountDisp.textContent = currentNearCount;
+    if (currentNearCount > thresholdTarget) {
+        horizonCountDisp.style.color = '#ef4444'; // Red alert
+    } else {
+        horizonCountDisp.style.color = 'cyan'; // Yellow waiting
+    }
+
+    // B. Threshold Check
+    if (currentNearCount > thresholdTarget) {
+        densityTimer++;
+        if (densityTimer > TIME_TO_COLLAPSE) {
+            blackHoles.push({ x: mx, y: my, age: 0 }); // Age tracks the implosion/explosion phase
+            densityTimer = 0;
+            currentNearCount = 0; // Reset sensor to prevent immediate double-spawns
+        }
+    } else { 
+        densityTimer *= 0.90; // Fast decay if you move the mouse away
+    }
+
+    // C. Draw the Visual Event Horizon (Draws ON TOP of the particles)
+    if (densityTimer > 1) {
+        const progress = densityTimer / TIME_TO_COLLAPSE;
+        
+        // Base visual radius derived from the math RADIUS (sqrt(12000) ≈ 109px)
+        const baseRadius = Math.sqrt(RADIUS); 
+        const drawRadius = Math.max(5, baseRadius * (1 - progress)); // Shrinks to 5px
+        
+        ctx.beginPath();
+        ctx.arc(mx, my, drawRadius, 0, Math.PI * 2);
+        
+        // Color shifts from yellow to intense red as it collapses
+        const r = 251 + (progress * 4);   // 251 to 255
+        const g = 191 - (progress * 191); // 191 to 0
+        const b = 36 - (progress * 36);   // 36 to 0
+        
+        // ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.4 + progress * 0.6})`; 
+        // Pure white stroke that gets more opaque as it shrinks
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 + progress * 0.6})`;
+        ctx.lineWidth = 2 + (progress * 4);
+        ctx.stroke();
+    }
+
+    // 5. Calculate Performance Metrics
+    const end = performance.now();
+    frames++;
+    
+    if (start > lastTime + 1000) {
+        fpsDisplay.textContent = frames;
+        
+        // Measure Logic Execution Time
+        const logicTime = end - start;
+        logicDisplay.textContent = logicTime.toFixed(2) + 'ms';
+        
+        if (logicTime > 16.6) {
+            logicDisplay.style.color = '#ef4444'; // Red (Dropping frames)
+        } else if (logicTime > 8) {
+            logicDisplay.style.color = '#f59e0b'; // Orange (Approaching limit)
+        } else {
+            logicDisplay.style.color = '#f8fafc'; // White (Healthy)
+        }
+
+        densDisp.textContent = (eng.density * 100).toFixed(2) + '%';
+        updateStatsDisplay();
+        
+        frames = 0;
+        lastTime = start;
+    }
+    
+    requestAnimationFrame(loop);
+}
+
+// Initial Boot
+buildSimulation(60000, true);
+loop();
+</script>
+</body>
+</html>
