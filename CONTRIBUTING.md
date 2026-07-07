@@ -1,16 +1,17 @@
-Bitcoin: bc1q8vwqrn7uyjrt3je2uvuc50mj75z8xeyvhn3gfw
+BTC:
+bc1qs49ppuhlgw69nyg3wz4v5plesntkl75ks6p4fj
 
-ETH: 0x945df04ae86c4e5fc6a8585ebc16c60fe3571a24
+ETH:
+0x9031583d3f053414b9e9f21262de3aed7882a793
 
-Sol: BBAFq7Rn5BhAQes89AEk8RtpwhfvuLFJjJEnxhE8Fzag
+SOL: 
+9ADZPH2XeCxDqxbaMADZ8gxyxokMAaCG3tBZ9TUcYjQ5
 
-Bnb Smart Chain: 0x945df04ae86c4e5fc6a8585ebc16c60fe3571a24
-
-Dogecoin: DMYisnr4VJLmWCec1rhnsLbAEpcForoWUP
-
-Litecoin: ltc1qc2gh0xtvlt9pgxdpqrhfpulupueq7na90le8rf
+DOGE: 
+DJuSu5Fjb9SWRvA8KAN9AgBn7394ULn39v
 
 
-^^^^
 
-GUARANTEED PROOF OF TRANSACTION. NO CHARGEBACKS. ATOMIC. I CANNOT LIE ABOUT FUNDS AND NEITHER CAN YOU. 
+Discord:
+
+discord.gg/KDpyYG4Ym
