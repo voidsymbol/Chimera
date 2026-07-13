@@ -230,21 +230,137 @@ The `void` prefix on the outer IIFE discards its return value (the function retu
 
 **Cost of reversal:** None in runtime terms for the `void`/argument pattern. Replacing the shorthand method form with a `function` expression would silently make the polyfill constructable, diverging from native behaviour.
 
+## ADR-013 · Packed Balanced‑Ternary Trit Word (Replaces ADR-003)
+
+Decision: Node state is stored in a single Int8Array cell (_trits) encoding five independent axes via powers of three:
+text
+
+Ψ = 81·R + 27·E + 9·A + 3·C + 1·T   (range –121 … +121)
+
+The five axes — Lifecycle (R), Evaluation (E), Gating (A), Capture (C), Tracking (T) — are each extracted using pre‑computed 256‑entry LUTs (LUT_R, LUT_E, …). The absolute value 0 is reserved for disposed nodes.
+
+**Rationale**: The previous Uint8Array bit‑flag system (ADR-003) assigned individual bits to disjoint states, forcing &/| logic and consuming one byte per orthogonal property. With five axes each requiring up to three states (–1, 0, +1), a bit‑field would require at least 2 bits per axis → 10 bits, complicating packing and LUT access.
+
+A single signed byte with base‑3 packing gives:
+
+    Single‑cycle state decode via LUT_*[trit + 128] — an indexed load, no branching.
+
+    Atomic updates by rewriting the whole byte (e.g., _trits[p] = _setR(v, +1)).
+
+    Dense cache usage: 1 byte per node, same as before, but semantically richer.
+
+    Simple range checks: e.g., v > 40 for Fresh, v < -40 for Stale, v === 0 for disposed.
+
+The LUT approach was chosen over arithmetic extraction because integer division/modulo by 3 on every hot‑path read would cost 10‑20× more cycles than a single indexed load.
+
+Supersedes: ADR-003 (the bit‑flag system is removed).
+Cost of reversal: Very high — every flag check in the kernel must be rewritten.
+
+## ADR-014 · Edge Record Stride‑4 with Packed DIRTY Bit
+
+Decision: Edge records occupy 4 Int32 lanes instead of 5, restoring power‑of‑two alignment. The DIRTY flag is moved into bit 31 of EDGE_TARGET (lane 0), using the fact that node indices never exceed 2^20. The epoch array uses edgeIdx >> 2 access.
+
+Rationale: Stride‑5 records (20 bytes) cross cache‑line boundaries, causing L1 misses during subscriber‑list traversal. A stride‑4 layout (16 bytes) fits exactly four edges per 64‑byte cache line. The packed DIRTY flag avoids an extra lane load, reducing memory traffic.
+
+The sign bit of a signed Int32 naturally serves as the DIRTY flag: raw < 0 is a single instruction. Clearing it uses &= 0x7FFFFFFF. No new array is needed for dirty state.
+
+Invariant: All sites that read the target node index must mask off bit 31 with EDGE_TARGET_MASK.
+Cost of reversal: High — mixed stride‑5 and stride‑4 edges would corrupt the arena immediately.
+
+## ADR-015 · Two‑Phase Sweep with Deferred Dirtying
+
+Decision: sweep() performs Phase 1 (physical edge and tree removal, barrier decrement, frontier collection) then Phase 2 (dirty all deferred Pull consumers). The zombie queue is drained completely each call.
+
+Rationale: Removing a node’s last dependency in a diamond‑shaped graph can cause a recompute (via recompute) before the remaining dependencies are cleaned up. By deferring the dirtying of Pull consumers to Phase 2, we ensure all edges are removed first, preventing use‑after‑free of edges or nodes that are still being swept.
+
+The frontier array collects Pull consumers whose dependency count hits zero during Phase 1; they are dirtied only after all zombie nodes have been fully dismantled.
+
+Cost of reversal: High — reordering phases reintroduces diamond‑graph corruption.
+
+## ADR-016 · BigInt Generation Tags for ABA Defense
+
+Decision: Node generation is stored in a BigUint64Array (_nodeGen). Every allocation bumps a global BigInt counter (_globalUUID). A signal’s external reference (handle) is gen * ID_MULTIPLIER_BIGINT + ptr.
+
+Rationale: The ABA problem (ADR-008) previously used a single number node.id. With arena sizes up to 2^20, a 32‑bit counter would risk wrapping. BigInt provides a monotonically increasing 64‑bit space, making wraparound impossible in practice.
+
+BigInt also allows safe construction of unique references by combining generation and pointer arithmetically, enabling Signal.deref(ref) to validate both gen and pointer in one step without a separate map.
+
+Cost of reversal: Low (the check is identical in nature to the old id), but would lose the ref‑construction convenience.
+
+## ADR-017 · Memoization Trie with Reference‑Counted Pruning
+
+Decision: memo(fn, opts) builds a parameter trie inside a host node’s _ctx. Leaves are autonomous reactive nodes. Eviction is FIFO, capped at maxSize (default 10 000). The trie uses bottom‑up reference counting (refs per trie node) to prune empty branches after eviction.
+
+Rationale: Without pruning, the trie’s Map buckets would permanently retain primitive keys, causing a structural memory leak that grows with every unique argument tuple. By tracking how many leaves pass through each trie node and pruning branches with refs === 0, the trie’s size stays proportional to the number of live memoised results, not the total number of distinct argument sets seen over the application’s lifetime.
+
+FIFO eviction avoids the complexity of true LRU (which would require per‑leaf timestamps and sorting), while still providing a predictable bound on memory usage.
+
+Cost of reversal: High — removing pruning reintroduces the leak. Changing to LRU would add per‑access timestamp overhead.
+
+## ADR-018 · Ownership Tree and Lifecycle Nesting
+
+Decision: Every node has a parent, first child, and next sibling stored in _nodeTree (three Uint32Array lanes per node). adopt(parent, child) and unlinkSibling(child) maintain the tree. Disposing a parent recursively disposes all children.
+
+Rationale: The tree provides deterministic lifecycle management: when a scope (store, effect owner, etc.) is torn down, all nodes created within that scope are automatically cleaned up. This eliminates the need for manual unsubscription or reference counting at the user level for owned signals.
+
+The tree is maintained in parallel with the dependency graph but is structurally independent — a node can be a child of one node while having reactive dependencies on others. The owner is typically the engine root or a store.
+
+Invariant: No cycles in the ownership tree (cycles would cause infinite disposal recursion).
+Cost of reversal: Medium — removing the tree would require users to explicitly dispose every derived signal, significantly changing the API surface.
+
+## ADR-019 · The TRIT_DEFAULT Encoding and Axis Defaults
+
+Decision: Each node type has a canonical trit word: TRIT_STATE (+1, 0, 0, 0, –1), TRIT_COMPUTED (–1, –1, +1, 0, –1), TRIT_EFFECT (–1, +1, –1, 0, –1). The Signal constructor derives the trit from user options, falling back to these defaults based on function vs value.
+
+Rationale: Encoding default behaviors in a single constant eliminates runtime branching during node creation. The axis values are chosen so that:
+
+    R = +1 (Fresh) for values; -1 (Stale) for functions that need evaluation.
+
+    E = +1 (Push) for effects (eager); -1 (Pull) for computeds (lazy).
+
+    A = +1 (Union) for computeds (any dep change triggers recompute); -1 (Consensus) for effects (all deps must fire).
+
+    C = 0 (Atomic) by default; DEEP (+1) or SHALLOW (-1) only when explicitly requested.
+
+    T = –1 (Semantic) for most nodes; VOLATILE (+1) for getters.
+
+This fits the entire behavioral contract into one byte, readable by a single LUT lookup per axis.
+
+Cost of reversal: Low in terms of lines, but the trit system is now fundamental; changing defaults would alter the semantics of every created signal.
+
+## Summary Table (Updated)
+
+Below is the updated summary table for **V17.0.f**, with obsolete ADRs removed and the new invariants integrated.
+
+Superseded ADRs:
+- **003** → replaced by 013 (trit encoding)
+- **005, 006** → obsolete (no `GraphNode` class or pool‑object recycling)
+- **008** → refined by 016 (BigInt generation tags)
+- **009, 010** → subsumed by the trit‑based state machine and per‑node lifecycle flags
+- **012** → not relevant to the current kernel core
+
+The table now represents the actual architectural load‑bearing decisions.
+
 ---
 
-## Summary Table
+## Summary Table — V17.0.f
 
 | ADR | Decision | Primary Benefit | Reversal Cost |
 |-----|----------|-----------------|---------------|
-| 001 | Lexical IIFE state | Unguarded context-slot loads vs property loads | Medium |
-| 002 | Struct-of-Arrays layout | L1/L2 cache density on sequential flush | High |
-| 003 | Uint8Array flags, all 8 bits used | L2 fit (256 KB), single-load multi-flag checks | Very high |
-| 004 | `!== 0` not `!ptr` | Monomorphic integer compare, no boolean coercion | Low |
-| 005 | `extends null` | No implicit `this` allocation in constructor | Medium |
-| 006 | Pool monomorphism, descriptor copy | Stable hidden class, monomorphic ICs | Very high |
-| 007 | Arena + free list + zombie queue | Zero GC pressure post-warmup | High |
-| 008 | ABA guard via `node.id` | Async slot-reuse safety, O(1) cost | Low |
-| 009 | DIRTY-as-state scheduler invariant | Unambiguous three-function state machine | Medium |
-| 010 | `DEEP\|DYNAMIC` edge-cleanup gate | Orthogonal dep-tracing vs proxy-wrapping | Medium |
-| 011 | `'use strict'` in IIFE | JIT argument / scope optimisations | Negligible |
-| 012 | `[[Construct]]`-less native-equivalent polyfill | Indistinguishable from native: no `[[Construct]]`, separate per-prototype, correct `.name`, minifiable | None |
+| 001 | Lexical IIFE state (all kernel arrays closed over as `let`) | Unguarded context‑slot loads, no hidden‑class checks | Medium |
+| 002 | Struct‑of‑Arrays (SoA) memory layout | L1/L2 cache density on sequential flush; flag arrays contiguous | High |
+| 004 | `!== 0` for pointer sentinel checks | Monomorphic integer comparisons, no boolean coercion | Low |
+| 007 | Arena allocator with free‑list, bump pointer, and zombie queue | Zero GC pressure post‑warmup; O(1) slot reuse | High |
+| 011 | `'use strict'` scoped to the IIFE | Enables JIT argument/scope optimisations without leaking to concatenated code | Negligible |
+| 013 | **Packed balanced‑ternary trit word** (`Int8Array`) | Single‑byte, five‑axis encoding; LUT‑based axis extraction; range‑checkable | Very high |
+| 014 | **Edge stride‑4 with DIRTY bit packed into target lane (bit 31)** | Cache‑line aligned records, single‑load subscriber walk, no extra dirty array | High |
+| 015 | **Two‑phase sweep with deferred dirtying** | Prevents use‑after‑free in diamond graphs; clean teardown order | High |
+| 016 | **BigInt generation tags (`BigUint64Array`)** | Absolute ABA safety, ability to form unique external refs arithmetically | Low |
+| 017 | **Memoization trie with ref‑counted branch pruning** | Bounded memory for memoised functions; no Map‑key leak from evicted leaves | High |
+| 018 | **Ownership tree (parent/child/sibling)** | Automatic recursive disposal of owned signals; deterministic lifecycle | Medium |
+| 019 | **Canonical trit constants (`TRIT_STATE`, `TRIT_COMPUTED`, `TRIT_EFFECT`)** | Branch‑free node creation; single‑byte contract for default behaviour | Low |
+
+---
+
+All decisions now align with the `INVARIANTS.md` for V17.  
+The reversal cost column highlights how deeply each choice is baked into the hot paths — think carefully before touching anything marked “High” or “Very high.”
