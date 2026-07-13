@@ -230,8 +230,11 @@ The `void` prefix on the outer IIFE discards its return value (the function retu
 
 **Cost of reversal:** None in runtime terms for the `void`/argument pattern. Replacing the shorthand method form with a `function` expression would silently make the polyfill constructable, diverging from native behaviour.
 
+
 **Version:** ^17.0.f
+
 **Scope:** Architectural
+
 **Purpose:** Optimization
 
 ---
