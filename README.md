@@ -55,7 +55,7 @@ const count = new Signal(0);
 const name  = new Signal("Ada");
 ```
 
-### `new Signal(fn)` — Computed
+### `new Signal(fn)` — Effect (to begin with, later depends on return value)
 
 ```js
 const doubled = new Signal(() => count.get() * 2);
