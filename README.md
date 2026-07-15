@@ -172,6 +172,238 @@ Signal.teardown()    // destroy arena, reinit L1
 | | | `'untracked'` | No tracking |
 ```
 
+```markdown
+## `new Signal.Store(data?, options?)`
+
+The reactive key-value store. Two modes: manual and memo.
+
+### Manual store
+
+```js
+const store = new Signal.Store();
+const store = new Signal.Store({ engine: root });    // attach to a substrate
+const store = new Signal.Store({ darkMode: false }); // seed with values
+```
+
+```js
+store.write('count', 0);      // write a value
+store.read('count');           // tracked read
+store.has('count');            // → boolean
+store.delete('count');         // dispose the node
+store.clear();                 // dispose all nodes
+store.size;                    // live nodes count
+```
+
+### Memo store (factory mode)
+
+```js
+const store = new Signal.Store(
+  (id, query) => fetch(`/api/${id}?q=${query}`).then(r => r.json()),
+  { maxSize: 5000, deep: true, union: true }
+);
+
+store.get(42, 'recent');       // calls factory, caches result
+store.has(42, 'recent');       // check cache
+store.delete(42, 'recent');    // evict one entry
+store.clear();                 // evict all
+store.size;                    // cached entries count
+store.isMemo;                  // → true
+```
+
 ---
 
-Want me to continue with `Store`, `memo`, `reactive`, and the triads (`$`, `Δ`, `ψ`, `ø`, `@`)?
+## Triads: `$` `$$` `$$$` `Δ` `ΔΔ` `ΔΔΔ` `@` `ø`
+
+Shortcut accessors on stores. Each creates a reactive namespace with a default
+capture/gating grain.
+
+| Triad | Capture | Gating |
+|-------|---------|--------|
+| `$`   | atomic  | consensus |
+| `$$`  | shallow | consensus |
+| `$$$` | deep    | consensus |
+| `Δ`   | atomic  | union |
+| `ΔΔ`  | shallow | union |
+| `ΔΔΔ` | deep    | union |
+| `@`   | atomic  | consensus (active) |
+| `ø`   | atomic  | consensus (atomic effect namespace) |
+
+### `store.$.count`
+
+The `Signal` handle itself. Use `.get()` / `.set()` / `.peek()`.
+
+### `store.$count`
+
+Tracked read/write accessor. Calls `store.read('$count')` / `store.write('$count', v)`.
+
+### `store.$('count')`
+
+Untracked read. `store.$('count', v)` writes.
+
+### `store.$({ count: 1, name: "Ada" })`
+
+Batch write. Bare keys get the `$` prefix added automatically.
+
+### Effect form
+
+```js
+store.$(async function* () {
+  while (true) {
+    const v = yield;
+    console.log('deep effect:', v);
+  }
+});
+```
+
+---
+
+## `ψ` chain
+
+Fluent seeding functor. Available on stores and element handles.
+
+```js
+store.ψ('$count', 0)('$name', 'Ada')();
+//        ↑ write         ↑ write     ↑ unwrap (returns store)
+
+store.ψ({ $count: 0, $name: 'Ada' });  // batch write
+
+store.ψ(() => console.log(count.get()), '$effect');  // named effect
+//                                     ↑ parks ref at '$effect$$effect' in dict
+
+store.ψ(() => { ... }, null, { capture: 'deep', affect: 'union' });  // effect with options
+//                       ↑ explicit null key when passing options
+
+element.ψFor(owner)  // returns a ψ chain that unwraps to the element
+```
+
+---
+
+## `Signal.reactive(target)`
+
+Decorates a class instance with a reactive store and proxy.
+
+```js
+class User {
+  $name = 'Ada';           // reactive field (atomic)
+  $$profile = { bio: '' }; // shallow tracked
+  ΔΔΔsettings = {};        // deep union-tracked
+
+  $get fullName() {        // reactive getter
+    return `${this.$name} Lovelace`;
+  }
+
+  $$effect() {             // reactive effect
+    console.log(this.$name);
+  }
+}
+
+const user = Signal.reactive(new User());
+```
+
+Prefix conventions on class members:
+
+| Prefix | Capture | Gating |
+|--------|---------|--------|
+| `$`    | atomic  | consensus |
+| `$$`   | shallow | consensus |
+| `$$$`  | deep    | consensus |
+| `Δ`    | atomic  | union |
+| `ΔΔ`   | shallow | union |
+| `ΔΔΔ`  | deep    | union |
+
+Suffix conventions on methods:
+
+| Suffix | Meaning |
+|--------|---------|
+| `$effect` `$$effect` `$$$effect` | Effect (grain matches prefix) |
+| `Δeffect` `ΔΔeffect` `ΔΔΔeffect` | Union effect |
+
+---
+
+## `Signal.memo(fn, options?)`
+
+Autonomous Parameterized Memoization. Caches results in a trie keyed by arguments.
+
+```js
+const getUser = Signal.memo(
+  async (id) => fetch(`/api/user/${id}`).then(r => r.json()),
+  { maxSize: 10000, deep: true, union: false }
+);
+
+const user = await getUser(42);   // fetch
+const same = await getUser(42);   // cache hit — no fetch
+```
+
+```js
+getUser.has(42);       // → boolean (cached?)
+getUser.delete(42);    // evict one
+getUser.clear();       // evict all
+getUser.size;          // cached count
+```
+
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `maxSize` | `10000` | FIFO eviction cap |
+| `deep` | `false` | Track nested access |
+| `union` | `false` | Immediate propagation |
+| `effect` | `false` | Treat as effect, not computed |
+| `key` | `(…args) => args` | Custom cache-key function |
+
+---
+
+## `Signal.layer(depth, value)`
+
+Write-time depth annotation for store values.
+
+```js
+store.write('config', Signal.layer(1, { darkMode: true }));  // shallow
+store.write('data',   Signal.layer(Infinity, hugeObject));   // deep
+```
+
+---
+
+## Low-level utilities
+
+### `Signal.deref(ref)`
+
+Convert a BigInt ref back to a Signal handle. Returns `undefined` if dead.
+
+```js
+const handle = Signal.deref(someBigIntRef);
+if (handle) handle.get();
+```
+
+### `Signal.subscribe(consumer, source)`
+
+Manually add a dependency edge. Both args can be handles or raw ptrs.
+
+### `Signal.unsubscribe(consumer, source)`
+
+Manually remove a dependency edge.
+
+### `Signal.find(scope, key, query?)`
+
+Look up a signal in a reactive instance's store.
+
+```js
+Signal.find(user, '$name');          // → value
+Signal.find(user, '$name', 'node');  // → Signal handle
+Signal.find(user, '$name', 'id');    // → ptr number
+Signal.find(user, '$name()');        // → Signal handle (parens → 'node')
+```
+
+### `Signal.subtle.Watcher`
+
+Low-level external watcher that batches notifications.
+
+```js
+const watcher = new Signal.subtle.Watcher(() => {
+  console.log('something changed');
+});
+
+watcher.watch(sig1, sig2);   // track these
+watcher.unwatch();           // disconnect all
+```
+```
