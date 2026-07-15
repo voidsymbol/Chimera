@@ -208,21 +208,20 @@ store.isMemo;                  // → true
 
 ---
 
-## Triads: `$` `$$` `$$$` `Δ` `ΔΔ` `ΔΔΔ` `@` `ø`
+## Triads: `$` `$$` `Δ` `ΔΔ` `ø`.
 
 Shortcut accessors on stores. Each creates a reactive namespace with a default
 capture/gating grain.
 
 | Triad | Capture | Gating |
 |-------|---------|--------|
-| `$`   | atomic  | consensus |
-| `$$`  | shallow | consensus |
-| `$$$` | deep    | consensus |
-| `Δ`   | atomic  | union |
-| `ΔΔ`  | shallow | union |
-| `ΔΔΔ` | deep    | union |
-| `@`   | atomic  | consensus (active) |
-| `ø`   | atomic  | consensus (atomic effect namespace) |
+| `$`   | shallow | consensus |
+| `$$`  | deep    | consensus |
+| `Δ`   | shallow  | union |
+| `ΔΔ`  | deep | union |
+| `ø`   | atomic  | N/A |
+
+.is files: | `@` | atomic  | N/A |
 
 ### `store.$.count`
 
@@ -280,16 +279,12 @@ Decorates a class instance with a reactive store and proxy.
 
 ```js
 class User {
-  $name = 'Ada';           // reactive field (atomic)
-  $$profile = { bio: '' }; // shallow tracked
-  ΔΔΔsettings = {};        // deep union-tracked
+  $name = 'Ada';           // reactive field (shallow)
+  $$profile = { bio: '' }; // deep tracked
+  ΔΔsettings = {};        // deep union-tracked
 
-  $get fullName() {        // reactive getter
+  get $fullName() {        // reactive getter
     return `${this.$name} Lovelace`;
-  }
-
-  $$effect() {             // reactive effect
-    console.log(this.$name);
   }
 }
 
