@@ -1,11 +1,6 @@
-```markdown
-# Chimera API
-
-## Import
+## `Chimera`
 
 ```js
-import { Signal, Substrate } from 'chimera';
-// or
 const { Signal, Substrate } = globalThis[Symbol.for('Chimera')](); // use this for now
 ```
 
