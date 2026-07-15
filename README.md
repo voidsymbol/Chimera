@@ -171,7 +171,7 @@ Signal.teardown()    // destroy arena, reinit L1
 | | | `'semantic'` | Standard tracking |
 | | | `'untracked'` | No tracking |
 
-## `new Signal.Store(data?, options?)`
+### `new Signal.Store(data?, options?)`
 
 The reactive key-value store. Two modes: manual and memo.
 
@@ -296,25 +296,18 @@ class User {
 const user = Signal.reactive(new User());
 ```
 
-Prefix conventions on class members:
+Prefix conventions on class members (computeds)
 
 | Prefix | Capture | Gating |
 |--------|---------|--------|
-| `$`    | atomic  | consensus |
-| `$$`   | shallow | consensus |
-| `$$$`  | deep    | consensus |
-| `Δ`    | atomic  | union |
+| `$`    | shallow | consensus |
+| `$$`   | deep    | consensus |
+| `Δ`    | shallow | union |
 | `ΔΔ`   | shallow | union |
-| `ΔΔΔ`  | deep    | union |
 
-Suffix conventions on methods:
-
-| Suffix | Meaning |
-|--------|---------|
-| `$effect` `$$effect` `$$$effect` | Effect (grain matches prefix) |
-| `Δeffect` `ΔΔeffect` `ΔΔΔeffect` | Union effect |
-
+Suffix conventions on methods: (effects)
 ---
+
 
 ## `Signal.memo(fn, options?)`
 
