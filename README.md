@@ -170,9 +170,7 @@ Signal.teardown()    // destroy arena, reinit L1
 | **T** | `threshold` | `'volatile'` | Always resubscribe |
 | | | `'semantic'` | Standard tracking |
 | | | `'untracked'` | No tracking |
-```
 
-```markdown
 ## `new Signal.Store(data?, options?)`
 
 The reactive key-value store. Two modes: manual and memo.
@@ -183,9 +181,7 @@ The reactive key-value store. Two modes: manual and memo.
 const store = new Signal.Store();
 const store = new Signal.Store({ engine: root });    // attach to a substrate
 const store = new Signal.Store({ darkMode: false }); // seed with values
-```
 
-```js
 store.write('count', 0);      // write a value
 store.read('count');           // tracked read
 store.has('count');            // → boolean
