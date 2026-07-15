@@ -6,7 +6,7 @@
 ```js
 import { Signal, Substrate } from 'chimera';
 // or
-const { Signal, Substrate } = Chimera;
+const { Signal, Substrate } = Chimera; // use this for now
 ```
 
 ---
