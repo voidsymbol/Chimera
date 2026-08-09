@@ -9,7 +9,7 @@
   (3) Right to Fork: $100,000
 
 ## Too Much Money Tier ##
- *Alphabet (Google), Amazon, Apple, Microsoft, Tencent, Nvidia*: Four times the given enterprise rate (see above).
+ *Alphabet (Google), Amazon, Apple, Microsoft, Tencent, Oracle, Nvidia*: Four times the given enterprise rate (see above).
 
 ## Lockout Tier ##
 **Disney, Meta, Roblox, MatchGroup, Reddit, Twitch, OpenAI**:
