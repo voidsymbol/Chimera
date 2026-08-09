@@ -8,7 +8,7 @@
   
   (3) Right to Fork: $100,000
 
-## Exception Tier ##
+## Too Much Money Tier ##
  *Google, Amazon, Apple, Microsoft*: Four times the given enterprise rate (see above).
 
 ## Lockout Tier ##
