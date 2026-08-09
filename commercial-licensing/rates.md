@@ -1,4 +1,4 @@
-### Enterprise Fees
+### Yearly Enterprise Fees
 
  All fiat currency fees are inflation-adjusted per CPI-U, at: August 9, 2026:
  
