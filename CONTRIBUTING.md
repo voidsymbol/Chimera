@@ -1,0 +1,17 @@
+BTC:
+bc1qs49ppuhlgw69nyg3wz4v5plesntkl75ks6p4fj
+
+ETH:
+0x9031583d3f053414b9e9f21262de3aed7882a793
+
+SOL: 
+9ADZPH2XeCxDqxbaMADZ8gxyxokMAaCG3tBZ9TUcYjQ5
+
+DOGE: 
+DJuSu5Fjb9SWRvA8KAN9AgBn7394ULn39v
+
+
+
+Discord:
+
+discord.gg/KDpyYG4Ym
