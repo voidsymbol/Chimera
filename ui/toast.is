@@ -1,0 +1,68 @@
+/* Instance-UI · Toast
+ * A message that comes and goes. One class, its own tag; the stack is an <output> in the top layer (popover=manual), so
+ * it sits over dialogs too, and a screen reader hears it (an <output> is a live region). Say it from anywhere:
+ *
+ *   Toast.show('Saved.');
+ *   Toast.show('Event created', { description: 'Sunday, 10:00', action: ['Undo', () => …], kind: 'success', duration: 6000 });
+ *
+ * kind: 'success' | 'error' | 'warning' | 'info' | none. duration in ms, 0 to keep it until closed. Hover pauses the
+ * clock; Escape on a focused toast closes it; the × always does. `Toast.dismiss()` clears the stack. */
+class Toast extends Instance {
+	#timer = null; #left = 0; #since = 0;
+
+	static get css() { return [super.css, `
+		display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; width: min(22rem, calc(100vw - 32px));
+		padding: 12px 14px; border: 1px solid var(--ui-border); border-radius: var(--ui-radius); background: var(--ui-card); color: var(--ui-foreground);
+		box-shadow: var(--ui-shadow); font-size: 14px; animation: ui-toast-in .2s ease-out;
+		> b { font-weight: 600; } > p { grid-column: 1; margin: 0; color: var(--ui-muted-foreground); font-size: 13px; }
+		> button.action { grid-row: 1 / span 2; grid-column: 2; height: 30px; padding: 0 10px; font-size: 13px; }
+		> button.close { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; color: var(--ui-muted-foreground); font-size: 16px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity .12s;
+			&:hover { color: var(--ui-foreground); } }
+		&:hover > button.close, &:focus-within > button.close { opacity: 1; }
+		position: relative;
+		&[data-kind=success] { border-color: color-mix(in srgb, #22c55e 50%, transparent); } &[data-kind=success] > b::before { content: '✓ '; color: #22c55e; }
+		&[data-kind=error] { border-color: color-mix(in srgb, var(--ui-destructive) 50%, transparent); } &[data-kind=error] > b::before { content: '✕ '; color: var(--ui-destructive); }
+		&[data-kind=warning] > b::before { content: '△ '; color: #f59e0b; }
+		&[data-kind=info] > b::before { content: 'ⓘ '; color: var(--ui-ring); }
+	`]; }
+
+	static get stack() {
+		let s = document.getElementById('ui-toasts');
+		if (!s) {
+			s = document.createElement('output');
+			s.id = 'ui-toasts'; s.setAttribute('popover', 'manual'); s.setAttribute('aria-label', 'Notifications');
+			s.style.cssText = 'position: fixed; inset: auto 16px 16px auto; margin: 0; padding: 0; border: 0; background: transparent; display: grid; gap: 8px; overflow: visible; max-width: calc(100vw - 32px);';
+			document.body.append(s);
+		}
+		if (!s.matches(':popover-open')) try { s.showPopover(); } catch (e) {}
+		return s;
+	}
+
+	static show(message, opts = {}) {
+		const t = new Toast();
+		if (opts.kind) t.dataset.kind = opts.kind;
+		t.setAttribute('role', opts.kind === 'error' ? 'alert' : 'status'); t.tabIndex = 0;
+		t.add(b().setText(String(message)));
+		if (opts.description) t.add(p().setText(String(opts.description)));
+		if (opts.action) { const [label, fn] = opts.action; t.add(button('.action.outline.sm').setText(String(label)).add('@click', () => { fn?.(); t.close(); })); }
+		t.add(button('.close', '×').set('aria-label', 'Close').add('@click', () => t.close()));
+		Toast.stack.append(t);
+		t.#left = opts.duration === undefined ? 5000 : opts.duration;
+		t.#tick();
+		return t;
+	}
+
+	static dismiss() { for (const t of document.querySelectorAll('#ui-toasts > toast')) t.close(); }
+
+	close() {
+		clearTimeout(this.#timer);
+		this.style.animation = 'ui-toast-out .15s ease-in forwards';
+		setTimeout(() => { const s = this.parentElement; this.remove(); if (s && !s.children.length) try { s.hidePopover(); } catch (e) {} }, 150);
+	}
+
+	#tick() { if (this.#left > 0) { this.#since = Date.now(); this.#timer = setTimeout(() => this.close(), this.#left); } }
+	['@mouseenter']() { if (this.#timer) { clearTimeout(this.#timer); this.#timer = null; this.#left -= Date.now() - this.#since; } }
+	['@mouseleave']() { if (!this.#timer) this.#tick(); }
+	['@keydown'](e) { if (e.key === 'Escape') this.close(); }
+}
+Instance.define(Toast);

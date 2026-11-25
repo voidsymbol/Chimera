@@ -1,0 +1,66 @@
+/* Instance-UI · Command
+ * The command palette: a dialog with a search field over groups of commands, filtered as you type, arrows and Enter to
+ * run one, Escape to close, ⌘K (or Ctrl+K) to open from anywhere when the tag says `hotkey`. Write the commands as
+ * markup — a group is a <section> with a heading, a command is a <button> inside it:
+ *
+ *   <command hotkey placeholder="Type a command or search…">
+ *     <section><h4>Suggestions</h4><button>Calendar</button><button>Search emoji</button></section>
+ *     <section><h4>Settings</h4><button>Profile <kbd>⌘P</kbd></button></section>
+ *   </command>
+ *
+ * A command's click is yours to hear (`el.on('click', …)` on the button, or a delegated ['@click button'] on a parent);
+ * running one closes the palette. `Command.open()` and `.close()` from code; `query` is what has been typed. */
+class Command extends Instance {
+	query = ''; cursor = 0;
+
+	static get css() { return [super.css, `
+		display: contents;
+		> dialog { padding: 0; width: min(36rem, calc(100% - 32px)); overflow: hidden;
+			> input { border: 0; border-bottom: 1px solid var(--ui-border); border-radius: 0; height: 44px; padding: 0 16px; &:focus-visible { outline: 0; } }
+			> .list { max-height: 20rem; overflow-y: auto; padding: 6px;
+				> section { > h4 { margin: 6px 8px; font-size: 12px; font-weight: 500; color: var(--ui-muted-foreground); }
+					> button { display: flex; width: 100%; justify-content: space-between; height: 36px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+						&[aria-selected=true] { background: var(--ui-accent); } &[hidden] { display: none; } & kbd { margin-left: auto; } }
+					&:has(> button:not([hidden])) + section:has(> button:not([hidden])) { border-top: 1px solid var(--ui-border); margin-top: 4px; padding-top: 4px; }
+					&:not(:has(> button:not([hidden]))) { display: none; } }
+				> .empty { padding: 24px; text-align: center; font-size: 14px; color: var(--ui-muted-foreground); } } }
+	`]; }
+
+	['@mount']() {
+		if (this.querySelector(':scope > dialog')) return;
+		const list = div('.list'); list.append(...this.children); list.setAttribute('role', 'listbox');
+		const field = input().set('role', 'combobox').set('aria-expanded', 'true').set('aria-autocomplete', 'list').set('autocomplete', 'off');
+		field.placeholder = this.getAttribute('placeholder') || 'Type a command or search…';
+		list.add(p('.empty', 'No results found.'));
+		this.add(dialog(field, list).set('aria-label', 'Command palette'));
+		if (this.hasAttribute('hotkey')) document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.open(); } });
+		this.show();
+	}
+	get dialog() { return this.querySelector(':scope > dialog'); }
+	get commands() { return [...this.querySelectorAll(':scope > dialog > .list > section > button')]; }
+	get shown() { return this.commands.filter(b => !b.hidden); }
+
+	open() { const d = this.dialog; if (d && !d.open) { this.query = ''; this.cursor = 0; d.querySelector('input').value = ''; d.showModal(); } }
+	close() { const d = this.dialog; if (d && d.open) d.close(); }
+
+	active show() {
+		const q = this.query.trim().toLowerCase(), cursor = this.cursor;   // read first: the effect follows what it read, even when it returns early
+		const d = this.dialog; if (!d) return;
+		for (const b of this.commands) b.hidden = q !== '' && !b.textContent.toLowerCase().includes(q);
+		const shown = this.shown, cur = Math.min(cursor, shown.length - 1);
+		shown.forEach((b, i) => { b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(i === cur)); });
+		d.querySelector('.empty').hidden = shown.length > 0;
+		shown[cur]?.scrollIntoView({ block: 'nearest' });
+	}
+
+	['@input > dialog > input'](e, field) { this.query = field.value; this.cursor = 0; }
+	['@click > dialog > .list button']() { this.close(); }
+	['@click > dialog'](e, d) { if (e.target === d) this.close(); }                      // the backdrop
+	['@keydown > dialog'](e) {
+		const shown = this.shown;
+		if (e.key === 'ArrowDown') { e.preventDefault(); this.cursor = shown.length ? (this.cursor + 1) % shown.length : 0; }
+		else if (e.key === 'ArrowUp') { e.preventDefault(); this.cursor = shown.length ? (this.cursor - 1 + shown.length) % shown.length : 0; }
+		else if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); shown[Math.min(this.cursor, shown.length - 1)]?.click(); }
+	}
+}
+Instance.define(Command);

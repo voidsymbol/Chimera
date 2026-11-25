@@ -29,7 +29,7 @@
    "files": [
     "native.css · Button"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -76,7 +76,7 @@
    "files": [
     "native.css · Input · Textarea · Select"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -129,7 +129,7 @@
    "files": [
     "native.css · Checkbox · Radio · Switch · Slider · Toggle group"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -171,7 +171,7 @@
    "files": [
     "native.css · Dialog · Sheet"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -204,7 +204,7 @@
    "files": [
     "native.css · Accordion · Collapsible"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -236,7 +236,7 @@
    "files": [
     "native.css · Dropdown menu · Popover"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -266,7 +266,7 @@
    "files": [
     "tabs.is"
    ],
-   "deps": [],
+   "deps": "",
    "note": "one class"
   }
  },
@@ -309,7 +309,7 @@
    "files": [
     "native.css · Progress · Badge · Alert · Skeleton · Avatar · Separator"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
   }
  },
@@ -361,12 +361,208 @@
    "deps": "@mui/system, @mui/utils, clsx, react-is"
   },
   "instance": {
-   "lines": 19,
+   "lines": 21,
    "files": [
     "native.css · Card · Table · Breadcrumb · Pagination"
    ],
-   "deps": [],
+   "deps": "",
    "note": "CSS only, no script"
+  }
+ },
+ "tooltip": {
+  "shadcn": {
+   "lines": 50,
+   "files": [
+    "tooltip.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), radix-ui"
+  },
+  "mui": {
+   "lines": 828,
+   "files": [
+    "Tooltip/Tooltip.js",
+    "Tooltip/tooltipClasses.ts"
+   ],
+   "deps": "@mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 6,
+   "files": [
+    "native.css · Tooltip"
+   ],
+   "deps": "",
+   "note": "CSS only, no script"
+  }
+ },
+ "toast": {
+  "shadcn": {
+   "lines": 36,
+   "files": [
+    "sonner.tsx"
+   ],
+   "deps": "lucide-react, next-themes, sonner",
+   "note": "a wrapper: the toast is the sonner package"
+  },
+  "mui": {
+   "lines": 699,
+   "files": [
+    "Snackbar/Snackbar.js",
+    "Snackbar/snackbarClasses.ts",
+    "Snackbar/useSnackbar.ts",
+    "Snackbar/useSnackbar.types.ts",
+    "SnackbarContent/SnackbarContent.js",
+    "SnackbarContent/snackbarContentClasses.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 62,
+   "files": [
+    "toast.is"
+   ],
+   "deps": "",
+   "note": "one class"
+  }
+ },
+ "combobox": {
+  "shadcn": {
+   "lines": 290,
+   "files": [
+    "combobox.tsx"
+   ],
+   "deps": "@base-ui/react, cn (clsx + tailwind-merge), lucide-react"
+  },
+  "mui": {
+   "lines": 1376,
+   "files": [
+    "Autocomplete/Autocomplete.js",
+    "Autocomplete/autocompleteClasses.ts"
+   ],
+   "deps": "@mui/utils"
+  },
+  "instance": {
+   "lines": 67,
+   "files": [
+    "combobox.is"
+   ],
+   "deps": "",
+   "note": "one class"
+  }
+ },
+ "command": {
+  "shadcn": {
+   "lines": 172,
+   "files": [
+    "command.tsx"
+   ],
+   "deps": "cmdk, cn (clsx + tailwind-merge), lucide-react",
+   "note": "a wrapper: the palette is the cmdk package"
+  },
+  "mui": {
+   "lines": null,
+   "files": [],
+   "deps": "",
+   "note": "none in @mui/material"
+  },
+  "instance": {
+   "lines": 61,
+   "files": [
+    "command.is"
+   ],
+   "deps": "",
+   "note": "one class"
+  }
+ },
+ "calendar": {
+  "shadcn": {
+   "lines": 210,
+   "files": [
+    "calendar.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), lucide-react, react-day-picker",
+   "note": "a wrapper: the grid is react-day-picker"
+  },
+  "mui": {
+   "lines": null,
+   "files": [],
+   "deps": "",
+   "note": "none in @mui/material (MUI X Date Pickers, a package of its own)"
+  },
+  "instance": {
+   "lines": 77,
+   "files": [
+    "calendar.is"
+   ],
+   "deps": "",
+   "note": "one class"
+  }
+ },
+ "datatable": {
+  "shadcn": {
+   "lines": 105,
+   "files": [
+    "table.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge)",
+   "note": "the table alone: the data table is TanStack Table on top, written per page"
+  },
+  "mui": {
+   "lines": 2010,
+   "files": [
+    "Table/Table.js",
+    "Table/TableContext.js",
+    "Table/Tablelvl2Context.js",
+    "Table/tableClasses.ts",
+    "TableHead/TableHead.js",
+    "TableHead/tableHeadClasses.ts",
+    "TableBody/TableBody.js",
+    "TableBody/tableBodyClasses.ts",
+    "TableRow/TableRow.js",
+    "TableRow/tableRowClasses.ts",
+    "TableCell/TableCell.js",
+    "TableCell/tableCellClasses.ts",
+    "TableContainer/TableContainer.js",
+    "TableContainer/tableContainerClasses.ts",
+    "TableSortLabel/TableSortLabel.js",
+    "TableSortLabel/tableSortLabelClasses.ts",
+    "TablePagination/TablePagination.js",
+    "TablePagination/tablePaginationClasses.ts",
+    "TablePaginationActions/TablePaginationActions.js",
+    "TablePaginationActions/tablePaginationActionsClasses.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 74,
+   "files": [
+    "datatable.is"
+   ],
+   "deps": "",
+   "note": "one class"
+  }
+ },
+ "carousel": {
+  "shadcn": {
+   "lines": 214,
+   "files": [
+    "carousel.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), embla-carousel-react, lucide-react",
+   "note": "a wrapper: the carousel is embla-carousel"
+  },
+  "mui": {
+   "lines": null,
+   "files": [],
+   "deps": "",
+   "note": "none in @mui/material"
+  },
+  "instance": {
+   "lines": 45,
+   "files": [
+    "carousel.is"
+   ],
+   "deps": "",
+   "note": "one class"
   }
  }
 }

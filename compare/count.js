@@ -23,6 +23,13 @@ const COMPONENTS = {
 	tabs:      { shadcn: ['tabs'],                         mui: ['Tabs', 'Tab', 'TabScrollButton'],                          kit: { is: 'tabs.is' } },
 	progress:  { shadcn: ['progress', 'badge', 'alert', 'skeleton', 'avatar', 'separator', 'kbd'], mui: ['LinearProgress', 'Chip', 'Alert', 'AlertTitle', 'Skeleton', 'Avatar', 'Divider'], kit: { css: 'Progress · Badge · Alert · Skeleton · Avatar · Separator' } },
 	card:      { shadcn: ['card', 'table', 'breadcrumb', 'pagination'], mui: ['Card', 'CardHeader', 'CardContent', 'CardActions', 'Table', 'TableHead', 'TableBody', 'TableRow', 'TableCell', 'TableContainer', 'Breadcrumbs', 'Pagination', 'PaginationItem', 'usePagination'], kit: { css: 'Card · Table · Breadcrumb · Pagination' } },
+	tooltip:   { shadcn: ['tooltip'],                      mui: ['Tooltip'],                                                kit: { css: 'Tooltip' } },
+	toast:     { shadcn: ['sonner'], shadcnNote: 'a wrapper: the toast is the sonner package', mui: ['Snackbar', 'SnackbarContent'], kit: { is: 'toast.is' } },
+	combobox:  { shadcn: ['combobox'],                     mui: ['Autocomplete'],                                           kit: { is: 'combobox.is' } },
+	command:   { shadcn: ['command'], shadcnNote: 'a wrapper: the palette is the cmdk package', mui: null, muiNote: 'none in @mui/material', kit: { is: 'command.is' } },
+	calendar:  { shadcn: ['calendar'], shadcnNote: 'a wrapper: the grid is react-day-picker', mui: null, muiNote: 'none in @mui/material (MUI X Date Pickers, a package of its own)', kit: { is: 'calendar.is' } },
+	datatable: { shadcn: ['table'], shadcnNote: 'the table alone: the data table is TanStack Table on top, written per page', mui: ['Table', 'TableHead', 'TableBody', 'TableRow', 'TableCell', 'TableContainer', 'TableSortLabel', 'TablePagination', 'TablePaginationActions'], kit: { is: 'datatable.is' } },
+	carousel:  { shadcn: ['carousel'], shadcnNote: 'a wrapper: the carousel is embla-carousel', mui: null, muiNote: 'none in @mui/material', kit: { is: 'carousel.is' } },
 };
 
 const lines = text => text.split('\n').filter(l => l.trim() !== '').length;
@@ -66,10 +73,11 @@ function kit(spec) {
 const head = dir => { try { return require('child_process').execSync('git log -1 --format=%h,%cs', { cwd: dir }).toString().trim(); } catch (e) { return '?'; } };
 const out = { _method: 'lines of the implementation files, tests/types/index left out; packages imported, named', _shadcn: head(SHADCN), _mui: head(MUI) };
 for (const [key, c] of Object.entries(COMPONENTS)) {
-	out[key] = { shadcn: shadcn(c.shadcn), mui: mui(c.mui), instance: kit(c.kit) };
-	for (const side of ['shadcn', 'mui']) out[key][side].deps = out[key][side].deps.join(', ');
+	out[key] = { shadcn: shadcn(c.shadcn), mui: c.mui ? mui(c.mui) : { lines: null, files: [], deps: [], note: c.muiNote }, instance: kit(c.kit) };
+	if (c.shadcnNote) out[key].shadcn.note = c.shadcnNote;
+	for (const side of ['shadcn', 'mui', 'instance']) out[key][side].deps = out[key][side].deps.join(', ');
 	const r = out[key];
-	console.log(key.padEnd(10), 'shadcn', String(r.shadcn.lines).padStart(5), '| mui', String(r.mui.lines).padStart(6), '| instance', String(r.instance.lines).padStart(4), r.instance.note);
+	console.log(key.padEnd(10), 'shadcn', String(r.shadcn.lines).padStart(5), '| mui', String(r.mui.lines ?? '—').padStart(6), '| instance', String(r.instance.lines).padStart(4), r.instance.note);
 }
 fs.writeFileSync(path.join(HERE, 'counts.json'), JSON.stringify(out, null, 1) + '\n');
 console.log('shadcn ' + out._shadcn + ' · mui ' + out._mui + ' → compare/counts.json');

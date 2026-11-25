@@ -89,6 +89,61 @@ const ok = (cond, what) => { console.log((cond ? '  ok   ' : '  FAIL ') + what);
 		});
 		for (const w of r.ok) ok(true, 'router: ' + w);
 		for (const w of r.bad) ok(false, 'router: ' + w);
+		// Toast
+		await page.click('#toast + .demo button:nth-child(1)'); await page.waitForTimeout(250);
+		const toast = await page.evaluate(() => { const s = document.getElementById('ui-toasts'); return { open: !!s && s.matches(':popover-open'), n: s ? s.children.length : 0, role: s && s.children[0] && s.children[0].getAttribute('role'), text: s && s.children[0] && s.children[0].querySelector('b').textContent }; });
+		ok(toast.open && toast.n === 1 && toast.role === 'status' && toast.text === 'Event has been created', 'a toast shows in the top layer, a status: ' + JSON.stringify(toast));
+		await page.click('#ui-toasts toast button.close'); await page.waitForTimeout(250);
+		ok(await page.evaluate(() => document.getElementById('ui-toasts').children.length === 0), 'and its × closes it');
+		// Combobox
+		await page.click('combobox > input'); await page.waitForTimeout(120);
+		const c0 = await page.evaluate(() => { const c = document.querySelector('combobox'); return c.open && c.list.matches(':popover-open') && c.field.getAttribute('aria-expanded') === 'true' && c.list.children.length === 5; });
+		ok(c0, 'the combobox opens its list on focus, aria-expanded true, five options');
+		await page.keyboard.type('nu'); await page.waitForTimeout(120);
+		ok(await page.evaluate(() => [...document.querySelector('combobox').list.children].map(l => l.textContent).join() === 'Nuxt.js'), 'typing filters the list');
+		await page.keyboard.press('Enter'); await page.waitForTimeout(120);
+		const c1 = await page.evaluate(() => { const c = document.querySelector('combobox'); return c.value + ':' + c.field.value + ':' + c.open; });
+		ok(c1 === 'nuxt:Nuxt.js:false', 'Enter takes the option: value, label, closed: ' + c1);
+		// Command
+		await page.keyboard.press('Escape'); await page.click('body'); await page.keyboard.press('Control+k'); await page.waitForTimeout(200);
+		ok(await page.evaluate(() => document.querySelector('command').dialog.open), 'Ctrl+K opens the palette');
+		await page.keyboard.type('cal'); await page.waitForTimeout(120);
+		ok(await page.evaluate(() => document.querySelector('command').shown.map(b => b.textContent.trim()).join() === 'Calendar,Calculator'), 'typing filters the commands');
+		await page.evaluate(() => { window.__ran = null; document.querySelector('command').querySelectorAll('button').forEach(b => b.addEventListener('click', () => window.__ran = b.textContent.trim())); });
+		await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(200);
+		const cmd = await page.evaluate(() => window.__ran + ':' + document.querySelector('command').dialog.open);
+		ok(cmd === 'Calculator:false', 'ArrowDown and Enter run the second one and close: ' + cmd);
+		// Calendar
+		const cal0 = await page.evaluate(() => { const c = document.querySelector('calendar'); return c.querySelector('h3').textContent + '|' + c.querySelector('[aria-selected=true]').dataset.iso + '|' + c.querySelector('button[tabindex="0"]').dataset.iso; });
+		ok(cal0 === 'November 2026|2026-11-25|2026-11-25', 'the calendar shows its month, the value selected and tabbable: ' + cal0);
+		await page.click('calendar [data-iso="2026-11-03"]'); await page.click('calendar .next'); await page.waitForTimeout(120);
+		const cal1 = await page.evaluate(() => { const c = document.querySelector('calendar'); return c.value + '|' + c.month + '|' + c.querySelector('h3').textContent; });
+		ok(cal1 === '2026-11-03|2026-12|December 2026', 'a click picks the day; next turns the month: ' + cal1);
+		await page.focus('calendar [data-iso="2026-12-01"]'); await page.keyboard.press('ArrowLeft'); await page.waitForTimeout(120);
+		const cal2 = await page.evaluate(() => document.querySelector('calendar').month + '|' + document.activeElement.dataset.iso);
+		ok(cal2 === '2026-11|2026-11-30', 'ArrowLeft from the first crosses into the month before: ' + cal2);
+		await page.click('calendar [data-iso="2026-11-25"]');
+		// Data table
+		const dt0 = await page.evaluate(() => { const d = document.querySelector('datatable'); return d.querySelectorAll('tbody tr').length + '|' + d.querySelector('tbody tr td.num').textContent + '|' + d.querySelector('footer .count').textContent; });
+		ok(dt0 === '4|$316.00|0 of 7 row(s) selected.', 'the table pages four rows, formats the amount, counts: ' + dt0);
+		await page.click('datatable th[data-key="amount"]'); await page.waitForTimeout(100);
+		const dt1 = await page.evaluate(() => { const d = document.querySelector('datatable'); return d.querySelector('th[aria-sort]').getAttribute('aria-sort') + '|' + d.querySelector('tbody tr td.num').textContent; });
+		ok(dt1 === 'ascending|$180.00', 'a header click sorts, aria-sort says so: ' + dt1);
+		await page.fill('datatable .bar input', 'ken'); await page.waitForTimeout(100);
+		ok(await page.evaluate(() => document.querySelector('datatable').querySelectorAll('tbody tr').length === 1), 'the filter narrows to one');
+		await page.fill('datatable .bar input', ''); await page.click('datatable th.sel input'); await page.waitForTimeout(100);
+		ok(await page.evaluate(() => document.querySelector('datatable').selected.length === 4), 'select-all takes the page\'s four');
+		await page.click('datatable footer .next'); await page.waitForTimeout(100);
+		const dt2 = await page.evaluate(() => { const d = document.querySelector('datatable'); return d.page + '|' + d.querySelectorAll('tbody tr').length + '|' + d.querySelector('footer .next').disabled; });
+		ok(dt2 === '1|3|true', 'next shows the last page of three, and stops: ' + dt2);
+		// Carousel
+		const car0 = await page.evaluate(() => { const c = document.querySelector('carousel'); return c.index + '|' + c.count + '|' + c.querySelectorAll('.dots button').length; });
+		ok(car0 === '0|5|5', 'the carousel wraps its slides with buttons and dots: ' + car0);
+		await page.click('carousel .next'); await page.waitForTimeout(450);
+		const car1 = await page.evaluate(() => { const c = document.querySelector('carousel'); return c.index + '|' + (c.track.scrollLeft > 0) + '|' + c.querySelector('.dots [aria-current]').getAttribute('aria-label'); });
+		ok(car1 === '1|true|Slide 2', 'next scrolls to the second, the dot follows: ' + car1);
+		await page.click('carousel .prev'); await page.click('carousel .prev'); await page.waitForTimeout(450);
+		ok(await page.evaluate(() => document.querySelector('carousel').index === 4), 'loop: back past the first lands on the last');
 		await page.context().close();
 	}
 	await browser.close(); srv.close();

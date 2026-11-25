@@ -27,8 +27,9 @@ file per component. The page is `index.html`; serve the folder and open it.
 - `src/platform.js` — the semantic elements, as they left the runtime.
 - `Instance-UI-<version>.js` — the one script, written by `tools/build.js` from the two above with the runtime's own
   compiler; the version is the runtime's, read from `lib/`.
-- `tools/check.js` — the check, in Chrome: the page loads clean, the native half is styled, Tabs mint from markup with
-  their ARIA and keyboard, the dialog and the menu open without a script, the router routes; dark and light.
+- `tools/check.js` — the check, in Chrome: the page loads clean, the native half is styled, every class does what its
+  section says — keyboard included — the dialog and the menu open without a script, the router routes; dark and light,
+  70 checks.
 - `compare/` — the count, below.
 - `chimera/` — the Chimera repository this one was, with its history: the reactive engine's public build, its README
   and its syntax notes. Chimera is inside Instance now (the runtime is one file); this folder is its record.
@@ -50,10 +51,20 @@ components it is built from. This kit's is the component's block of `native.css`
 | Accordion · Collapsible | 87 | 1,185 | 12, CSS only |
 | Dropdown menu · Popover | 318 | 1,636 | 8, CSS only |
 | Tabs | 83 | 1,676 | 47, one class |
+| Tooltip | 50 | 828 | 6, CSS only |
+| Toast | 36* | 699 | 62, one class |
+| Combobox | 290 | 1,376 | 67, one class |
+| Command | 172* | — | 61, one class |
+| Calendar | 210* | — | 77, one class |
+| Data table | 105* | 2,010 | 74, one class |
+| Carousel | 214* | — | 45, one class |
 | Progress · Badge · Alert · Skeleton · Avatar · Separator | 290 | 2,843 | 21, CSS only |
-| Card · Table · Breadcrumb · Pagination | 404 | 2,806 | 19, CSS only |
+| Card · Table · Breadcrumb · Pagination | 404 | 2,806 | 21, CSS only |
 
-Lines, at shadcn `055aa6b` and MUI `0fb8b83`. Run it yourself:
+Lines, at shadcn `055aa6b` and MUI `0fb8b83`. A star marks a shadcn file that is a wrapper over a package the count does
+not include — sonner for the toast, cmdk for the palette, react-day-picker for the calendar, embla for the carousel —
+and its table row, under which the data table is TanStack Table written per page. A dash: no such component in
+`@mui/material`. Run it yourself:
 
     git clone --depth 1 --filter=blob:none --sparse https://github.com/shadcn-ui/ui.git /tmp/shadcn
     git -C /tmp/shadcn sparse-checkout set apps/v4/registry/new-york-v4/ui

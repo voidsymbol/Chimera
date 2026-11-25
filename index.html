@@ -120,6 +120,81 @@
 &lt;/tabs&gt;</pre>
 	<div class="count" data-count="tabs"></div>
 
+	<h2 id="tooltip">Tooltip</h2>
+	<div class="demo">
+		<button class="outline" aria-describedby="tip1">Hover me</button><span role="tooltip" id="tip1">Add to library</span>
+		<button class="outline" aria-describedby="tip2">Or me</button><span role="tooltip" id="tip2">Anchored, no script</span>
+	</div>
+	<pre>&lt;button aria-describedby="tip1"&gt;Hover me&lt;/button&gt;&lt;span role="tooltip" id="tip1"&gt;Add to library&lt;/span&gt;</pre>
+	<div class="count" data-count="tooltip"></div>
+
+	<h2 id="toast">Toast</h2>
+	<div class="demo">
+		<button class="outline" onclick="Toast.show('Event has been created', { description: 'Sunday, December 03, 2023 at 9:00 AM', action: ['Undo', () => Toast.show('Undone.', { kind: 'info', duration: 2500 })] })">Show toast</button>
+		<button class="outline" onclick="Toast.show('Saved.', { kind: 'success' })">Success</button>
+		<button class="outline" onclick="Toast.show('Could not save.', { kind: 'error', description: 'The server said 500.' })">Error</button>
+	</div>
+	<pre>Toast.show('Event has been created', { description: 'Sunday at 9:00', action: ['Undo', () =&gt; …] });</pre>
+	<div class="count" data-count="toast"></div>
+
+	<h2 id="combobox">Combobox</h2>
+	<div class="demo" style="min-height: 60px">
+		<combobox placeholder="Select framework…" style="width: 16rem">
+			<option value="next">Next.js</option><option value="sveltekit">SvelteKit</option><option value="nuxt">Nuxt.js</option><option value="remix">Remix</option><option value="astro">Astro</option>
+		</combobox>
+	</div>
+	<pre>&lt;combobox placeholder="Select framework…"&gt;
+  &lt;option value="next"&gt;Next.js&lt;/option&gt;&lt;option value="sveltekit"&gt;SvelteKit&lt;/option&gt;…
+&lt;/combobox&gt;</pre>
+	<div class="count" data-count="combobox"></div>
+
+	<h2 id="command">Command</h2>
+	<div class="demo">
+		<button class="outline" onclick="document.querySelector('command').open()">Open palette <kbd style="margin-left: 8px">⌘K</kbd></button>
+		<command hotkey placeholder="Type a command or search…">
+			<section><h4>Suggestions</h4><button>Calendar</button><button>Search emoji</button><button>Calculator</button></section>
+			<section><h4>Settings</h4><button>Profile <kbd>⌘P</kbd></button><button>Billing <kbd>⌘B</kbd></button><button>Settings <kbd>⌘S</kbd></button></section>
+		</command>
+	</div>
+	<pre>&lt;command hotkey&gt;
+  &lt;section&gt;&lt;h4&gt;Suggestions&lt;/h4&gt;&lt;button&gt;Calendar&lt;/button&gt;&lt;button&gt;Search emoji&lt;/button&gt;&lt;/section&gt;
+  &lt;section&gt;&lt;h4&gt;Settings&lt;/h4&gt;&lt;button&gt;Profile &lt;kbd&gt;⌘P&lt;/kbd&gt;&lt;/button&gt;&lt;/section&gt;
+&lt;/command&gt;</pre>
+	<div class="count" data-count="command"></div>
+
+	<h2 id="calendar">Calendar</h2>
+	<div class="demo">
+		<calendar value="2026-11-25"></calendar>
+		<div class="field" style="width: 12rem"><label for="d1">Or the platform's</label><input id="d1" type="date" value="2026-11-25"></div>
+	</div>
+	<pre>&lt;calendar value="2026-11-25" min="2026-01-01"&gt;&lt;/calendar&gt;      cal.value → '2026-11-25'; a 'change' event on a pick</pre>
+	<div class="count" data-count="calendar"></div>
+
+	<h2 id="datatable">Data table</h2>
+	<div class="demo col">
+		<datatable filter="email" page-size="4" selectable>
+			<table><thead><tr><th data-key="status">Status</th><th data-key="email">Email</th><th data-key="amount" data-type="number" data-format="money">Amount</th></tr></thead></table>
+		</datatable>
+	</div>
+	<pre>&lt;datatable filter="email" page-size="4" selectable&gt;
+  &lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th data-key="status"&gt;Status&lt;/th&gt;&lt;th data-key="email"&gt;Email&lt;/th&gt;&lt;th data-key="amount" data-type="number"&gt;Amount&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;/table&gt;
+&lt;/datatable&gt;
+dt.rows = [{ status: 'success', email: 'ken99@example.com', amount: 316 }, …];</pre>
+	<div class="count" data-count="datatable"></div>
+
+	<h2 id="carousel">Carousel</h2>
+	<div class="demo" style="padding: 24px 68px">
+		<carousel loop style="width: 100%">
+			<article class="card" style="display: grid; place-items: center; height: 160px; font-size: 32px">1</article>
+			<article class="card" style="display: grid; place-items: center; height: 160px; font-size: 32px">2</article>
+			<article class="card" style="display: grid; place-items: center; height: 160px; font-size: 32px">3</article>
+			<article class="card" style="display: grid; place-items: center; height: 160px; font-size: 32px">4</article>
+			<article class="card" style="display: grid; place-items: center; height: 160px; font-size: 32px">5</article>
+		</carousel>
+	</div>
+	<pre>&lt;carousel loop&gt;&lt;article&gt;1&lt;/article&gt;&lt;article&gt;2&lt;/article&gt;&lt;article&gt;3&lt;/article&gt;&lt;/carousel&gt;</pre>
+	<div class="count" data-count="carousel"></div>
+
 	<h2 id="feedback">Progress · Badge · Alert · Skeleton · Avatar · Separator</h2>
 	<div class="demo col" style="max-width: 560px">
 		<progress value="60" max="100"></progress>
@@ -153,13 +228,24 @@
 	<script type="application/json" id="counts">{}</script>
 </div>
 <script>
+	/* the data table's rows: handed from code once the kit has run (this script runs after it, the page parsed) */
+	{
+		const dt = document.querySelector('datatable');
+		dt.money = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+		dt.rows = [
+			{ status: 'success', email: 'ken99@example.com', amount: 316 }, { status: 'success', email: 'abe45@example.com', amount: 242 },
+			{ status: 'processing', email: 'monserrat44@example.com', amount: 837 }, { status: 'success', email: 'silas22@example.com', amount: 874 },
+			{ status: 'failed', email: 'carmella@example.com', amount: 721 }, { status: 'success', email: 'lena@example.com', amount: 180 },
+			{ status: 'processing', email: 'omar@example.com', amount: 1120 }
+		];
+	}
 	/* the count boxes: filled from compare/counts.json when it is there (served), from the inline copy otherwise */
 	(async () => {
 		let counts = {};
 		try { counts = await (await fetch('compare/counts.json')).json(); } catch (e) { try { counts = JSON.parse(document.getElementById('counts').textContent); } catch (e2) {} }
 		for (const box of document.querySelectorAll('.count[data-count]')) {
 			const c = counts[box.dataset.count]; if (!c) { box.remove(); continue; }
-			const cell = (name, v, ours) => `<div${ours ? ' class="ours"' : ''}><b>${name}</b>${v.lines} lines${v.deps ? ' · imports ' + v.deps : ' · imports nothing'}${v.note ? ' · ' + v.note : ''}</div>`;
+			const cell = (name, v, ours) => `<div${ours ? ' class="ours"' : ''}><b>${name}</b>${v.lines === null ? '—' : v.lines + ' lines' + (v.deps ? ' · imports ' + v.deps : ours ? '' : ' · imports nothing')}${v.note ? ' · ' + v.note : ''}</div>`;
 			box.innerHTML = cell('shadcn/ui', c.shadcn) + cell('MUI', c.mui) + cell('Instance-UI', c.instance, true);
 		}
 	})();

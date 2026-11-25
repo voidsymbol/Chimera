@@ -117,6 +117,14 @@
 		& hr { margin: 4px -4px; } }
 	& .popover[popover] { padding: 16px; width: 18rem; font-size: 14px; }
 
+	/* ── Tooltip ────────────────────────────────────────────────────────────────────────────────────────────────── */
+	& [role=tooltip] {                                                     /* <button aria-describedby="t">…</button><span role="tooltip" id="t">…</span> */
+		position: absolute; position-anchor: --ui-tip; bottom: anchor(top); left: anchor(center); translate: -50% -6px;
+		padding: 6px 10px; border-radius: 6px; background: var(--ui-primary); color: var(--ui-primary-foreground); font-size: 12px; white-space: nowrap;
+		opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 1; }
+	& :has(+ [role=tooltip]) { anchor-name: --ui-tip; }
+	& :is(:hover, :focus-visible) + [role=tooltip] { opacity: 1; }
+
 	/* ── Progress · Badge · Alert · Skeleton · Avatar · Separator ────────────────────────── */
 	& progress { display: block; width: 100%; height: 8px; appearance: none; border: 0; border-radius: 999px;
 		background: var(--ui-muted); overflow: hidden;
@@ -161,3 +169,5 @@
 		& a:hover { background: var(--ui-accent); } & [aria-current] { border: 1px solid var(--ui-input); } }
 }
 @keyframes ui-pulse { 50% { opacity: .5; } }
+@keyframes ui-toast-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes ui-toast-out { to { opacity: 0; translate: 0 8px; } }

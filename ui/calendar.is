@@ -1,0 +1,81 @@
+/* Instance-UI · Calendar
+ * A month to pick a day from: the APG grid — a table with the weekdays as headers, every day a button, one in the tab
+ * order, arrows to move by day and week, PageUp and PageDown by month, Home and End to the week's ends. Dates are ISO
+ * strings, so `value` is yours to read and set: `cal.value = '2026-11-25'`; a 'change' event fires on a pick. `min` and
+ * `max` on the tag bound it; `locale` names the language of the labels (the page's by default).
+ *
+ *   <calendar value="2026-11-25" min="2026-01-01"></calendar>
+ *
+ * For a date field, the platform has one: <input type="date">, styled by native.css. This is the grid on the page. */
+class Calendar extends Instance {
+	value = ''; month = '';   // month: 'YYYY-MM' shown
+
+	static get css() { return [super.css, `
+		display: inline-block; padding: 12px; border: 1px solid var(--ui-border); border-radius: var(--ui-radius); background: var(--ui-card);
+		> header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+			> h3 { margin: 0; font-size: 14px; font-weight: 500; } > button { width: 28px; height: 28px; padding: 0; } }
+		> table { border-collapse: collapse; > thead th { width: 36px; height: 28px; font-size: 12px; font-weight: 400; color: var(--ui-muted-foreground); padding: 0; }
+			> tbody td { padding: 1px; border: 0;
+				> button { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: inherit; font: inherit; font-size: 14px; cursor: pointer;
+					&:hover { background: var(--ui-accent); } &[aria-selected=true] { background: var(--ui-primary); color: var(--ui-primary-foreground); }
+					&[data-today] { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+					&[data-outside] { color: var(--ui-muted-foreground); opacity: .5; } &:disabled { opacity: .3; cursor: default; }
+					&:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: -2px; } } } }
+	`]; }
+
+	['@mount']() {
+		if (this.querySelector(':scope > table')) return;
+		if (this.hasAttribute('value')) this.value = this.getAttribute('value');
+		this.month = (this.value || Calendar.iso(new Date())).slice(0, 7);
+		this.setAttribute('role', 'group'); this.setAttribute('aria-label', 'Calendar');
+		this.add(header(button('.outline.prev', '‹').set('aria-label', 'Previous month'), h3().set('aria-live', 'polite'), button('.outline.next', '›').set('aria-label', 'Next month')),
+			table(thead(tr()), tbody()).set('role', 'grid'));
+		this.show();
+	}
+	static iso(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+	static date(iso) { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d || 1); }
+	get locale() { return this.getAttribute('locale') || document.documentElement.lang || undefined; }
+	inRange(iso) { const min = this.getAttribute('min'), max = this.getAttribute('max'); return (!min || iso >= min) && (!max || iso <= max); }
+
+	active show() {
+		const month = this.month, value = this.value;   // read first: the effect follows what it read, even when it returns early
+		const table = this.querySelector(':scope > table'); if (!table || !month) return;
+		const first = Calendar.date(this.month + '-01'), locale = this.locale, today = Calendar.iso(new Date());
+		this.querySelector(':scope > header > h3').textContent = first.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+		const head = table.tHead.rows[0]; head.replaceChildren();
+		const monday = new Date(2024, 0, 1);                                   // a Monday, for the weekday names
+		for (let i = 0; i < 7; i++) { const d = new Date(monday); d.setDate(monday.getDate() + i); head.append(th().setText(d.toLocaleDateString(locale, { weekday: 'short' }).slice(0, 2)).set('scope', 'col').set('aria-label', d.toLocaleDateString(locale, { weekday: 'long' }))); }
+		const body = table.tBodies[0]; body.replaceChildren();
+		const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7));   // back to Monday
+		const focusIso = this.value && this.value.slice(0, 7) === this.month ? this.value : (today.slice(0, 7) === this.month ? today : this.month + '-01');
+		for (let w = 0; w < 6; w++) {
+			const row = tr();
+			for (let i = 0; i < 7; i++) {
+				const d = new Date(start); d.setDate(start.getDate() + w * 7 + i); const iso = Calendar.iso(d);
+				const cell = button().setText(String(d.getDate())).set('data-iso', iso).set('aria-label', d.toLocaleDateString(locale, { dateStyle: 'long' }));
+				if (iso.slice(0, 7) !== this.month) cell.set('data-outside', ''); if (iso === today) cell.set('data-today', '');
+				cell.setAttribute('aria-selected', String(iso === this.value)); cell.tabIndex = iso === focusIso ? 0 : -1;
+				if (!this.inRange(iso)) cell.disabled = true;
+				row.add(td(cell).set('role', 'gridcell'));
+			}
+			body.append(row);
+			if (new Date(start.getFullYear(), start.getMonth(), start.getDate() + (w + 1) * 7) > new Date(first.getFullYear(), first.getMonth() + 1, 0)) break;
+		}
+	}
+
+	shift(months) { const d = Calendar.date(this.month + '-01'); d.setMonth(d.getMonth() + months); this.month = Calendar.iso(d).slice(0, 7); }
+	['@click > header > .prev']() { this.shift(-1); }
+	['@click > header > .next']() { this.shift(1); }
+	['@click > table button'](e, cell) { if (cell.disabled) return; this.value = cell.dataset.iso; this.month = this.value.slice(0, 7); this.dispatchEvent(new Event('change', { bubbles: true })); }
+	['@keydown > table button'](e, cell) {
+		const d = Calendar.date(cell.dataset.iso), by = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+		if (by !== undefined) d.setDate(d.getDate() + by);
+		else if (e.key === 'PageUp') d.setMonth(d.getMonth() - 1); else if (e.key === 'PageDown') d.setMonth(d.getMonth() + 1);
+		else if (e.key === 'Home') d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); else if (e.key === 'End') d.setDate(d.getDate() + (6 - (d.getDay() + 6) % 7));
+		else return;
+		e.preventDefault();
+		const iso = Calendar.iso(d); if (iso.slice(0, 7) !== this.month) this.month = iso.slice(0, 7);
+		const target = this.querySelector(`button[data-iso="${iso}"]`); if (target) { this.querySelectorAll(':scope > table button').forEach(b => b.tabIndex = -1); target.tabIndex = 0; target.focus(); }
+	}
+}
+Instance.define(Calendar);

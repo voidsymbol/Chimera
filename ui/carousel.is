@@ -1,0 +1,49 @@
+/* Instance-UI · Carousel
+ * Slides that snap, with a previous and a next. The scrolling is the browser's (scroll-snap); the class adds the two
+ * buttons, the index, the keyboard. Write the slides as children:
+ *
+ *   <carousel><article>1</article><article>2</article><article>3</article></carousel>
+ *
+ * `index` is the slide in view; set it and the track scrolls. `loop` on the tag wraps the ends. */
+class Carousel extends Instance {
+	index = 0;
+
+	static get css() { return [super.css, `
+		display: block; position: relative;
+		> .track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; gap: 16px;
+			> * { flex: 0 0 100%; scroll-snap-align: start; } }
+		> button { position: absolute; top: 50%; translate: 0 -50%; width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 16px;
+			&.prev { left: -44px; } &.next { right: -44px; } }
+		> .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px;
+			> button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: var(--ui-border); &[aria-current] { background: var(--ui-foreground); } } }
+	`]; }
+
+	['@mount']() {
+		if (this.querySelector(':scope > .track')) return;
+		const track = div('.track'); track.append(...this.children); track.setAttribute('aria-live', 'polite');
+		this.setAttribute('role', 'region'); this.setAttribute('aria-roledescription', 'carousel'); this.tabIndex = 0;
+		this.add(track, button('.prev.outline', '‹').set('aria-label', 'Previous slide'), button('.next.outline', '›').set('aria-label', 'Next slide'),
+			div('.dots', [...track.children].map((_, i) => button().set('aria-label', `Slide ${i + 1}`))));
+		this.show();                                       // the effect ran at new, before the track existed
+	}
+	get track() { return this.querySelector(':scope > .track'); }
+	get count() { return this.track ? this.track.children.length : 0; }
+
+	active show() {
+		const n = this.index, track = this.track; if (!track) return;
+		const slide = track.children[n]; if (slide && Math.abs(track.scrollLeft - slide.offsetLeft) > 1) track.scrollTo({ left: slide.offsetLeft });
+		[...track.children].forEach((s, i) => { s.setAttribute('aria-roledescription', 'slide'); s.setAttribute('aria-label', `${i + 1} of ${this.count}`); });
+		this.querySelectorAll(':scope > .dots > button').forEach((d, i) => { if (i === n) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+		const loop = this.hasAttribute('loop');
+		this.querySelector(':scope > .prev').disabled = !loop && n === 0;
+		this.querySelector(':scope > .next').disabled = !loop && n === this.count - 1;
+	}
+
+	step(d) { const c = this.count; if (!c) return; let i = this.index + d; if (this.hasAttribute('loop')) i = (i + c) % c; this.index = Math.max(0, Math.min(c - 1, i)); }
+	['@click > .prev']() { this.step(-1); }
+	['@click > .next']() { this.step(1); }
+	['@click > .dots > button'](e, dot) { this.index = [...dot.parentNode.children].indexOf(dot); }
+	['@keydown'](e) { if (e.key === 'ArrowLeft') { e.preventDefault(); this.step(-1); } else if (e.key === 'ArrowRight') { e.preventDefault(); this.step(1); } }
+	['@scrollend > .track'](e, track) { const w = track.children[0]?.offsetWidth || 1; const i = Math.round(track.scrollLeft / (w + 16)); if (i !== this.index) this.index = i; }
+}
+Instance.define(Carousel);

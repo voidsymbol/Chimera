@@ -1,0 +1,78 @@
+/* Instance-UI · DataTable
+ * A table over rows you hand it: sort by a column (click its header; aria-sort says which), filter on one key, select
+ * rows, page through them. The table is the platform's <table>, styled by native.css; the class is the state around
+ * it. Write the columns as the header, hand the rows from code:
+ *
+ *   <datatable filter="email" page-size="5" selectable>
+ *     <table><thead><tr><th data-key="status">Status</th><th data-key="email">Email</th><th data-key="amount" data-type="number">Amount</th></tr></thead></table>
+ *   </datatable>
+ *   dt.rows = [{ status: 'success', email: 'ken99@example.com', amount: 316 }, …];
+ *
+ * `rows`, `sort` ({ key, dir }), `query`, `page`, `selected` (the selected rows) are fields: set any, the table follows.
+ * A column's data-type: 'number' sorts numerically and aligns right; a `data-format` names a method of yours on the
+ * element that renders the cell (`format(value, row)`), text otherwise, never markup. */
+class DataTable extends Instance {
+	rows = []; sort = null; query = ''; page = 0; selected = [];
+
+	static get css() { return [super.css, `
+		display: block;
+		> .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; > input { max-width: 20rem; } }
+		> .frame { border: 1px solid var(--ui-border); border-radius: var(--ui-radius); overflow: hidden; }
+		th[data-key] { cursor: pointer; user-select: none; &:hover { color: var(--ui-foreground); } &[aria-sort]::after { content: ' ↑'; } &[aria-sort=descending]::after { content: ' ↓'; } }
+		td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+		tr[aria-selected=true] { background: var(--ui-muted); }
+		td.empty { text-align: center; color: var(--ui-muted-foreground); padding: 24px; }
+		> footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; font-size: 13px; color: var(--ui-muted-foreground); > span > button { margin-left: 8px; } }
+	`]; }
+
+	['@mount']() {
+		if (this.querySelector(':scope > .frame')) return;
+		const table = this.querySelector(':scope > table'); if (!table) return;
+		const head = table.tHead?.rows[0]; if (!head) return;
+		if (this.hasAttribute('selectable')) head.prepend(th(input().set('type', 'checkbox').set('aria-label', 'Select all')).set('class', 'sel'));
+		for (const h of head.querySelectorAll('th[data-key]')) { h.tabIndex = 0; h.setAttribute('scope', 'col'); if (h.dataset.type === 'number') h.classList.add('num'); }
+		if (!table.tBodies.length) table.append(tbody());
+		const frame = div('.frame'); frame.append(table);
+		if (this.hasAttribute('filter')) this.add(div('.bar', input().set('placeholder', `Filter ${this.getAttribute('filter')}…`).set('aria-label', `Filter by ${this.getAttribute('filter')}`)));
+		this.add(frame, footer(span('.count'), span('.pages', button('.outline.sm.prev', 'Previous'), button('.outline.sm.next', 'Next'))));
+		this.show();
+	}
+	get columns() { return [...this.querySelectorAll(':scope > .frame th[data-key]')].map(h => ({ key: h.dataset.key, type: h.dataset.type, format: h.dataset.format, th: h })); }
+	get view() {
+		let rows = this.rows.slice();
+		const f = this.getAttribute('filter'), q = this.query.trim().toLowerCase();
+		if (f && q) rows = rows.filter(r => String(r[f] ?? '').toLowerCase().includes(q));
+		const s = this.sort;
+		if (s) { const num = this.columns.find(c => c.key === s.key)?.type === 'number'; rows.sort((a, b) => { const x = a[s.key], y = b[s.key]; const c = num ? (Number(x) - Number(y)) : String(x ?? '').localeCompare(String(y ?? '')); return s.dir === 'desc' ? -c : c; }); }
+		return rows;
+	}
+	get pageSize() { return Number(this.getAttribute('page-size')) || Infinity; }
+
+	active show() {
+		const rows = this.rows, sort = this.sort, query = this.query, page0 = this.page, selected = this.selected;   // read first: the effect follows what it read, even when it returns early
+		const table = this.querySelector(':scope > .frame > table'); if (!table) return;
+		const cols = this.columns, view = this.view, size = this.pageSize, pages = Math.max(1, Math.ceil(view.length / size)), page = Math.min(page0, pages - 1);
+		const shown = view.slice(page * size, page * size + size), selectable = this.hasAttribute('selectable');
+		for (const c of cols) { if (this.sort && this.sort.key === c.key) c.th.setAttribute('aria-sort', this.sort.dir === 'desc' ? 'descending' : 'ascending'); else c.th.removeAttribute('aria-sort'); }
+		const body = table.tBodies[0]; body.replaceChildren();
+		if (!shown.length) body.append(tr(td('.empty', 'No results.').set('colspan', String(cols.length + (selectable ? 1 : 0)))));
+		for (const row of shown) {
+			const r = tr(); const on = this.selected.includes(row);
+			if (selectable) { r.setAttribute('aria-selected', String(on)); r.add(td(input().set('type', 'checkbox').set('aria-label', 'Select row')).set('class', 'sel')); r.querySelector('input').checked = on; }
+			for (const c of cols) { const cell = td(); const v = row[c.key]; const text = c.format && typeof this[c.format] === 'function' ? this[c.format](v, row) : (v == null ? '' : String(v)); cell.setText(text); if (c.type === 'number') cell.classList.add('num'); r.add(cell); }
+			body.append(r);
+		}
+		const all = this.querySelector(':scope > .frame th.sel > input'); if (all) { all.checked = shown.length > 0 && shown.every(r => this.selected.includes(r)); all.indeterminate = !all.checked && shown.some(r => this.selected.includes(r)); }
+		const count = this.querySelector(':scope > footer > .count'); if (count) count.textContent = selectable ? `${this.selected.length} of ${view.length} row(s) selected.` : `${view.length} row(s).`;
+		const pg = this.querySelector(':scope > footer > .pages'); if (pg) { pg.querySelector('.prev').disabled = page === 0; pg.querySelector('.next').disabled = page >= pages - 1; pg.style.display = size === Infinity ? 'none' : ''; }
+	}
+
+	['@click > .frame th[data-key]'](e, h) { const key = h.dataset.key; this.sort = this.sort && this.sort.key === key ? (this.sort.dir === 'asc' ? { key, dir: 'desc' } : null) : { key, dir: 'asc' }; }
+	['@keydown > .frame th[data-key]'](e, h) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); h.click(); } }
+	['@input > .bar > input'](e, field) { this.query = field.value; this.page = 0; }
+	['@change > .frame th.sel > input'](e, box) { const shown = this.view.slice(this.page * this.pageSize, this.page * this.pageSize + this.pageSize); this.selected = box.checked ? [...new Set([...this.selected, ...shown])] : this.selected.filter(r => !shown.includes(r)); }
+	['@change > .frame td.sel > input'](e, box) { const i = [...box.closest('tbody').children].indexOf(box.closest('tr')); const row = this.view.slice(this.page * this.pageSize, this.page * this.pageSize + this.pageSize)[i]; this.selected = box.checked ? [...this.selected, row] : this.selected.filter(r => r !== row); }
+	['@click > footer .prev']() { this.page = Math.max(0, this.page - 1); }
+	['@click > footer .next']() { this.page = this.page + 1; }
+}
+Instance.define(DataTable);
