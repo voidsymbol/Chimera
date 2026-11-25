@@ -1,0 +1,50 @@
+{
+  "name": "@instance-js/ui",
+  "version": "0.92.16",
+  "description": "Instance-UI: the shadcn/ui and MUI catalogues written on Instance — the native half a stylesheet, the rest one class each, with its own tag. One script, loaded after the runtime.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "voidsymbol",
+  "homepage": "https://github.com/voidsymbol/chimera#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voidsymbol/chimera.git"
+  },
+  "bugs": {
+    "url": "https://github.com/voidsymbol/chimera/issues"
+  },
+  "keywords": [
+    "instance",
+    "ui",
+    "components",
+    "shadcn",
+    "mui",
+    "tabs",
+    "combobox",
+    "toast",
+    "datatable",
+    "calendar",
+    "router",
+    "no-build",
+    "web"
+  ],
+  "main": "Instance-UI-0.92.g.js",
+  "exports": {
+    ".": "./Instance-UI-0.92.g.js",
+    "./native.css": "./ui/native.css",
+    "./tokens.css": "./ui/tokens.css",
+    "./package.json": "./package.json"
+  },
+  "jsdelivr": "Instance-UI-0.92.g.js",
+  "unpkg": "Instance-UI-0.92.g.js",
+  "sideEffects": true,
+  "peerDependencies": {
+    "@instance-js/instance": ">=0.92.16"
+  },
+  "files": [
+    "Instance-UI-0.92.g.js",
+    "ui/native.css",
+    "ui/tokens.css",
+    "LICENSE.md",
+    "README.md"
+  ]
+}

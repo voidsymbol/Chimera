@@ -21,6 +21,17 @@ file per component. The page is `index.html`; serve the folder and open it.
     <script src="lib/Instance-0.92.g.js" ⚡></script>
     <script src="Instance-UI-0.92.g.js"></script>
 
+Or from npm — the package is [`@instance-js/ui`](https://www.npmjs.com/package/@instance-js/ui), the runtime's is
+[`@instance-js/instance`](https://www.npmjs.com/package/@instance-js/instance) (version `0.92.16` is the file `0.92.g`: the
+letter is a base-32 digit); the two stylesheets are in it too:
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@instance-js/ui@0.92/ui/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@instance-js/ui@0.92/ui/native.css">
+    <script src="https://cdn.jsdelivr.net/npm/@instance-js/instance@0.92" ⚡></script>
+    <script src="https://cdn.jsdelivr.net/npm/@instance-js/ui@0.92"></script>
+
+    npm install @instance-js/instance @instance-js/ui
+
 ## In the repository
 
 - `ui/` — the components: `tokens.css`, `native.css`, one `.is` per class. The source.
