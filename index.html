@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instance-UI</title>
+<link rel="stylesheet" href="ui/tokens.css">
+<link rel="stylesheet" href="ui/native.css">
+<style>
+	body { margin: 0; font-family: var(--ui-font); }
+	.page { max-width: 960px; margin: 0 auto; padding: 32px 24px 96px; }
+	h1 { font-size: 28px; margin: 0 0 8px; } .page > h2 { font-size: 20px; margin: 56px 0 8px; padding-top: 24px; border-top: 1px solid var(--ui-border); }
+	.lede { color: var(--ui-muted-foreground); font-size: 15px; line-height: 1.6; max-width: 70ch; }
+	.demo { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 24px; border: 1px dashed var(--ui-border); border-radius: 12px; margin: 12px 0; }
+	.demo.col { flex-direction: column; align-items: stretch; }
+	pre { font: 13px/1.5 var(--ui-mono); background: var(--ui-muted); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0; }
+	.count { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 0; font-size: 13px;
+		& > div { padding: 10px 12px; border: 1px solid var(--ui-border); border-radius: 8px; } & b { display: block; font-size: 12px; color: var(--ui-muted-foreground); margin-bottom: 4px; }
+		& .ours { border-color: var(--ui-ring); } }
+	.theme { position: fixed; top: 16px; right: 16px; }
+	@media (max-width: 640px) { .count { grid-template-columns: 1fr; } }
+</style>
+<script src="lib/Instance-0.92.g.js" ⚡></script>
+<script src="Instance-UI-0.92.g.js"></script>
+</head>
+<body>
+<div class="page ui">
+	<p class="theme"><button class="outline sm" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Light / dark</button></p>
+	<h1>Instance-UI</h1>
+	<p class="lede">The shadcn/ui catalogue, and MUI's, written on <a href="https://github.com/voidsymbol/Instance">Instance</a>:
+	each component next to the original, with the count. Two halves. What the platform already has — a button, a dialog,
+	a switch, an accordion, a menu — is a stylesheet on the native element and nothing else: no class, no script, no
+	wrapper; the behaviour, the keyboard and the screen reader are the browser's. What the platform lacks — tabs, a
+	combobox, a toast, a data table — is one class each, its own tag, on the platform's own primitives. No build, no
+	dependencies, one file per component. Put <code>class="ui"</code> on a container and the native half is on.</p>
+
+	<h2 id="button">Button</h2>
+	<div class="demo">
+		<button>Primary</button><button class="secondary">Secondary</button><button class="outline">Outline</button>
+		<button class="ghost">Ghost</button><button class="destructive">Destructive</button><button class="link">Link</button>
+		<button class="sm">Small</button><button class="lg">Large</button><button disabled>Disabled</button>
+	</div>
+	<pre>&lt;button&gt;Primary&lt;/button&gt;  &lt;button class="outline sm"&gt;Outline, small&lt;/button&gt;</pre>
+	<div class="count" data-count="button"></div>
+
+	<h2 id="input">Input · Textarea · Select · Label</h2>
+	<div class="demo col" style="max-width: 420px">
+		<div class="field"><label for="email">Email</label><input id="email" type="email" placeholder="you@example.com"><small>We never share it.</small></div>
+		<div class="field"><label for="msg">Message</label><textarea id="msg" placeholder="Type your message here."></textarea></div>
+		<div class="field"><label for="fruit">Fruit</label><select id="fruit"><option>Apple</option><option>Banana</option><option>Cherry</option></select></div>
+		<div class="field"><label for="file">Picture</label><input id="file" type="file"></div>
+	</div>
+	<pre>&lt;div class="field"&gt;&lt;label for="email"&gt;Email&lt;/label&gt;&lt;input id="email" type="email"&gt;&lt;small&gt;We never share it.&lt;/small&gt;&lt;/div&gt;</pre>
+	<div class="count" data-count="input"></div>
+
+	<h2 id="checkbox">Checkbox · Radio · Switch · Slider · Toggle group</h2>
+	<div class="demo">
+		<label class="choice"><input type="checkbox" checked> Accept terms</label>
+		<label class="choice"><input type="radio" name="r" checked> Default</label>
+		<label class="choice"><input type="radio" name="r"> Comfortable</label>
+		<label class="choice"><input type="checkbox" role="switch" checked> Airplane mode</label>
+		<label class="choice" style="flex: 1 1 200px">Volume <input type="range" value="40"></label>
+		<div class="toggle-group" role="group" aria-label="Weight">
+			<label><input type="radio" name="w" checked><span>Bold</span></label><label><input type="radio" name="w"><span>Italic</span></label><label><input type="radio" name="w"><span>Underline</span></label>
+		</div>
+	</div>
+	<pre>&lt;label class="choice"&gt;&lt;input type="checkbox" role="switch" checked&gt; Airplane mode&lt;/label&gt;</pre>
+	<div class="count" data-count="switch"></div>
+
+	<h2 id="dialog">Dialog · Sheet</h2>
+	<div class="demo">
+		<button class="outline" commandfor="d1" command="show-modal">Edit profile</button>
+		<dialog id="d1"><h2>Edit profile</h2><p>Make changes to your profile here. Click save when you're done.</p>
+			<div class="field"><label for="n1">Name</label><input id="n1" value="Ada Lovelace"></div>
+			<footer><button class="outline" commandfor="d1" command="close">Cancel</button><button commandfor="d1" command="close">Save changes</button></footer></dialog>
+		<button class="outline" commandfor="s1" command="show-modal">Open sheet</button>
+		<dialog id="s1" class="sheet"><h2>Settings</h2><p>A dialog that keeps to one edge. <code>.sheet.left</code>, <code>.top</code>, <code>.bottom</code> are the others.</p>
+			<footer><button commandfor="s1" command="close">Done</button></footer></dialog>
+	</div>
+	<pre>&lt;button commandfor="d1" command="show-modal"&gt;Edit profile&lt;/button&gt;
+&lt;dialog id="d1"&gt;…&lt;footer&gt;&lt;button commandfor="d1" command="close"&gt;Save&lt;/button&gt;&lt;/footer&gt;&lt;/dialog&gt;</pre>
+	<div class="count" data-count="dialog"></div>
+
+	<h2 id="accordion">Accordion · Collapsible</h2>
+	<div class="demo col" style="max-width: 560px; gap: 0">
+		<details name="faq" open><summary>Is it accessible?</summary><p>Yes. It is the browser's own disclosure, with the keyboard and the semantics it ships with.</p></details>
+		<details name="faq"><summary>Is it styled?</summary><p>Yes. It comes with this look by default, and the tokens are yours to change.</p></details>
+		<details name="faq"><summary>Is it animated?</summary><p>Open one and the other closes: <code>name</code> on each is the whole of that behaviour.</p></details>
+	</div>
+	<pre>&lt;details name="faq"&gt;&lt;summary&gt;Is it accessible?&lt;/summary&gt;&lt;p&gt;Yes.&lt;/p&gt;&lt;/details&gt;</pre>
+	<div class="count" data-count="accordion"></div>
+
+	<h2 id="dropdown">Dropdown menu · Popover</h2>
+	<div class="demo">
+		<button class="outline" popovertarget="m1" style="anchor-name: --m1">Open menu</button>
+		<menu id="m1" popover style="position-anchor: --m1; top: anchor(bottom); left: anchor(left); margin-top: 4px">
+			<li>Profile <kbd style="margin-left:auto">⇧⌘P</kbd></li><li>Billing <kbd style="margin-left:auto">⌘B</kbd></li><li>Settings</li><hr><li aria-disabled="true">API</li><li>Log out</li>
+		</menu>
+		<button class="outline" popovertarget="p1" style="anchor-name: --p1">Dimensions</button>
+		<div id="p1" class="popover" popover style="position-anchor: --p1; top: anchor(bottom); left: anchor(left); margin-top: 4px">
+			<b>Dimensions</b><p style="margin: 4px 0 12px; color: var(--ui-muted-foreground)">Set the dimensions for the layer.</p>
+			<div class="field"><label for="w1">Width</label><input id="w1" value="100%" class="sm"></div>
+		</div>
+	</div>
+	<pre>&lt;button popovertarget="m1" style="anchor-name: --m1"&gt;Open menu&lt;/button&gt;
+&lt;menu id="m1" popover style="position-anchor: --m1; top: anchor(bottom)"&gt;&lt;li&gt;Profile&lt;/li&gt;…&lt;/menu&gt;</pre>
+	<div class="count" data-count="dropdown"></div>
+
+	<h2 id="tabs">Tabs</h2>
+	<div class="demo col" style="max-width: 420px">
+		<tabs>
+			<nav><button>Account</button><button>Password</button></nav>
+			<section><div class="field"><label for="a1">Name</label><input id="a1" value="Ada Lovelace"></div></section>
+			<section><div class="field"><label for="p2">Current password</label><input id="p2" type="password"></div></section>
+		</tabs>
+	</div>
+	<pre>&lt;tabs&gt;
+  &lt;nav&gt;&lt;button&gt;Account&lt;/button&gt;&lt;button&gt;Password&lt;/button&gt;&lt;/nav&gt;
+  &lt;section&gt;…&lt;/section&gt;&lt;section&gt;…&lt;/section&gt;
+&lt;/tabs&gt;</pre>
+	<div class="count" data-count="tabs"></div>
+
+	<h2 id="feedback">Progress · Badge · Alert · Skeleton · Avatar · Separator</h2>
+	<div class="demo col" style="max-width: 560px">
+		<progress value="60" max="100"></progress>
+		<p><span class="badge">Badge</span> <span class="badge secondary">Secondary</span> <span class="badge outline">Outline</span> <span class="badge destructive">Destructive</span> &nbsp; <kbd>⌘</kbd> <kbd>K</kbd> &nbsp;
+			<span class="avatar">AL</span></p>
+		<div role="alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><b>Heads up!</b><span>You can add components to your app using the cli.</span></div>
+		<div role="alert" class="destructive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><b>Error</b><span>Your session has expired. Please log in again.</span></div>
+		<hr>
+		<div style="display:flex; gap: 12px; align-items:center"><span class="skeleton" style="width:48px;height:48px;border-radius:50%"></span><div style="flex:1; display:grid; gap:8px"><span class="skeleton" style="height:14px;width:60%"></span><span class="skeleton" style="height:14px;width:40%"></span></div></div>
+	</div>
+	<pre>&lt;progress value="60" max="100"&gt;&lt;/progress&gt;   &lt;span class="badge outline"&gt;Outline&lt;/span&gt;   &lt;div role="alert"&gt;&lt;b&gt;Heads up!&lt;/b&gt;&lt;span&gt;…&lt;/span&gt;&lt;/div&gt;</pre>
+	<div class="count" data-count="progress"></div>
+
+	<h2 id="card">Card · Table · Breadcrumb · Pagination</h2>
+	<div class="demo col" style="max-width: 560px">
+		<article class="card"><header><h3>Create project</h3><p>Deploy your new project in one click.</p></header>
+			<div class="field"><label for="pn">Name</label><input id="pn" placeholder="Name of your project"></div>
+			<footer><button class="outline">Cancel</button><button>Deploy</button></footer></article>
+		<table><caption>A list of your recent invoices.</caption><thead><tr><th>Invoice</th><th>Status</th><th>Method</th><th class="num">Amount</th></tr></thead>
+			<tbody><tr><td>INV001</td><td>Paid</td><td>Credit card</td><td class="num">$250.00</td></tr><tr><td>INV002</td><td>Pending</td><td>PayPal</td><td class="num">$150.00</td></tr><tr><td>INV003</td><td>Unpaid</td><td>Bank transfer</td><td class="num">$350.00</td></tr></tbody></table>
+		<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="#">Home</a></li><li><a href="#">Components</a></li><li aria-current="page">Breadcrumb</li></ol></nav>
+		<nav class="pagination" aria-label="Pagination"><ul><li><a href="#">‹ Previous</a></li><li><a href="#">1</a></li><li><a href="#" aria-current="page">2</a></li><li><a href="#">3</a></li><li><span>…</span></li><li><a href="#">Next ›</a></li></ul></nav>
+	</div>
+	<pre>&lt;article class="card"&gt;&lt;header&gt;&lt;h3&gt;Create project&lt;/h3&gt;&lt;p&gt;…&lt;/p&gt;&lt;/header&gt;…&lt;footer&gt;&lt;button&gt;Deploy&lt;/button&gt;&lt;/footer&gt;&lt;/article&gt;</pre>
+	<div class="count" data-count="card"></div>
+
+	<h2 id="count">The count</h2>
+	<p class="lede">For each component: the lines shadcn ships for it and the packages it imports; the lines MUI ships for it and
+	what those import; the lines here. Counted by <code>compare/count.js</code> from the two repositories' sources at the
+	commits named in <code>compare/counts.json</code>; the boxes above are filled from that file.</p>
+	<script type="application/json" id="counts">{}</script>
+</div>
+<script>
+	/* the count boxes: filled from compare/counts.json when it is there (served), from the inline copy otherwise */
+	(async () => {
+		let counts = {};
+		try { counts = await (await fetch('compare/counts.json')).json(); } catch (e) { try { counts = JSON.parse(document.getElementById('counts').textContent); } catch (e2) {} }
+		for (const box of document.querySelectorAll('.count[data-count]')) {
+			const c = counts[box.dataset.count]; if (!c) { box.remove(); continue; }
+			const cell = (name, v, ours) => `<div${ours ? ' class="ours"' : ''}><b>${name}</b>${v.lines} lines${v.deps ? ' · imports ' + v.deps : ' · imports nothing'}${v.note ? ' · ' + v.note : ''}</div>`;
+			box.innerHTML = cell('shadcn/ui', c.shadcn) + cell('MUI', c.mui) + cell('Instance-UI', c.instance, true);
+		}
+	})();
+</script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+{
+ "_method": "lines of the implementation files, tests/types/index left out; packages imported, named",
+ "_shadcn": "055aa6b,2026-11-23",
+ "_mui": "0fb8b83,2026-11-25",
+ "button": {
+  "shadcn": {
+   "lines": 59,
+   "files": [
+    "button.tsx"
+   ],
+   "deps": "class-variance-authority, cn (clsx + tailwind-merge), radix-ui"
+  },
+  "mui": {
+   "lines": 2135,
+   "files": [
+    "Button/Button.js",
+    "Button/buttonClasses.ts",
+    "ButtonBase/ButtonBase.js",
+    "ButtonBase/Ripple.js",
+    "ButtonBase/TouchRipple.js",
+    "ButtonBase/buttonBaseClasses.ts",
+    "ButtonBase/touchRippleClasses.ts",
+    "ButtonBase/useButtonBase.ts"
+   ],
+   "deps": "@mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 25,
+   "files": [
+    "native.css · Button"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "input": {
+  "shadcn": {
+   "lines": 338,
+   "files": [
+    "input.tsx",
+    "textarea.tsx",
+    "label.tsx",
+    "native-select.tsx",
+    "field.tsx"
+   ],
+   "deps": "class-variance-authority, cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 3302,
+   "files": [
+    "TextField/TextField.js",
+    "TextField/textFieldClasses.ts",
+    "OutlinedInput/NotchedOutline.js",
+    "OutlinedInput/OutlinedInput.js",
+    "OutlinedInput/outlinedInputClasses.ts",
+    "InputBase/InputBase.js",
+    "InputBase/inputBaseClasses.ts",
+    "InputBase/inputBaseSizeContext.js",
+    "InputBase/utils.js",
+    "FormControl/FormControl.js",
+    "FormControl/FormControlContext.ts",
+    "FormControl/formControlClasses.ts",
+    "FormControl/useFormControl.ts",
+    "InputLabel/InputLabel.js",
+    "InputLabel/inputLabelClasses.ts",
+    "FormHelperText/FormHelperText.js",
+    "FormHelperText/formHelperTextClasses.ts",
+    "NativeSelect/NativeSelect.js",
+    "NativeSelect/NativeSelectInput.js",
+    "NativeSelect/nativeSelectClasses.ts"
+   ],
+   "deps": "@mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 17,
+   "files": [
+    "native.css · Input · Textarea · Select"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "switch": {
+  "shadcn": {
+   "lines": 233,
+   "files": [
+    "checkbox.tsx",
+    "radio-group.tsx",
+    "switch.tsx",
+    "slider.tsx",
+    "toggle-group.tsx"
+   ],
+   "deps": "class-variance-authority, cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 4836,
+   "files": [
+    "Checkbox/Checkbox.js",
+    "Checkbox/checkboxClasses.ts",
+    "Radio/Radio.js",
+    "Radio/RadioButtonIcon.js",
+    "Radio/radioClasses.ts",
+    "RadioGroup/RadioGroup.js",
+    "RadioGroup/RadioGroupContext.ts",
+    "RadioGroup/radioGroupClasses.ts",
+    "RadioGroup/useRadioGroup.ts",
+    "Switch/Switch.js",
+    "Switch/switchClasses.ts",
+    "Slider/Slider.js",
+    "Slider/SliderValueLabel.tsx",
+    "Slider/SliderValueLabel.types.ts",
+    "Slider/sliderClasses.ts",
+    "Slider/useSlider.ts",
+    "Slider/useSlider.types.ts",
+    "ToggleButton/RovingToggleButton.tsx",
+    "ToggleButton/ToggleButton.js",
+    "ToggleButton/toggleButtonClasses.ts",
+    "ToggleButtonGroup/ToggleButtonGroup.js",
+    "ToggleButtonGroup/ToggleButtonGroupButtonContext.ts",
+    "ToggleButtonGroup/ToggleButtonGroupContext.ts",
+    "ToggleButtonGroup/isValueSelected.js",
+    "ToggleButtonGroup/toggleButtonGroupClasses.ts",
+    "internal:SwitchBase/SwitchBase.js"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx, react-dom, react-is"
+  },
+  "instance": {
+   "lines": 18,
+   "files": [
+    "native.css · Checkbox · Radio · Switch · Slider · Toggle group"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "dialog": {
+  "shadcn": {
+   "lines": 275,
+   "files": [
+    "dialog.tsx",
+    "sheet.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 2304,
+   "files": [
+    "Dialog/Dialog.js",
+    "Dialog/DialogContext.ts",
+    "Dialog/dialogClasses.ts",
+    "DialogTitle/DialogTitle.js",
+    "DialogTitle/dialogTitleClasses.ts",
+    "DialogContent/DialogContent.js",
+    "DialogContent/dialogContentClasses.ts",
+    "DialogContentText/DialogContentText.js",
+    "DialogContentText/dialogContentTextClasses.ts",
+    "DialogActions/DialogActions.js",
+    "DialogActions/dialogActionsClasses.ts",
+    "Drawer/Drawer.js",
+    "Drawer/drawerClasses.ts",
+    "Modal/Modal.js",
+    "Modal/ModalManager.ts",
+    "Modal/modalClasses.ts",
+    "Modal/useModal.ts",
+    "Modal/useModal.types.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 13,
+   "files": [
+    "native.css · Dialog · Sheet"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "accordion": {
+  "shadcn": {
+   "lines": 87,
+   "files": [
+    "accordion.tsx",
+    "collapsible.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 1185,
+   "files": [
+    "Accordion/Accordion.js",
+    "Accordion/AccordionContext.js",
+    "Accordion/accordionClasses.ts",
+    "AccordionSummary/AccordionSummary.js",
+    "AccordionSummary/accordionSummaryClasses.ts",
+    "AccordionDetails/AccordionDetails.js",
+    "AccordionDetails/accordionDetailsClasses.ts",
+    "Collapse/Collapse.js",
+    "Collapse/collapseClasses.ts"
+   ],
+   "deps": "@mui/utils, clsx, react-is"
+  },
+  "instance": {
+   "lines": 12,
+   "files": [
+    "native.css · Accordion · Collapsible"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "dropdown": {
+  "shadcn": {
+   "lines": 318,
+   "files": [
+    "dropdown-menu.tsx",
+    "popover.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 1636,
+   "files": [
+    "Menu/Menu.js",
+    "Menu/menuClasses.ts",
+    "MenuItem/MenuItem.js",
+    "MenuItem/menuItemClasses.ts",
+    "MenuList/MenuList.js",
+    "MenuList/MenuListContext.tsx",
+    "Popover/Popover.js",
+    "Popover/popoverClasses.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 8,
+   "files": [
+    "native.css · Dropdown menu · Popover"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "tabs": {
+  "shadcn": {
+   "lines": 83,
+   "files": [
+    "tabs.tsx"
+   ],
+   "deps": "class-variance-authority, cn (clsx + tailwind-merge), radix-ui"
+  },
+  "mui": {
+   "lines": 1676,
+   "files": [
+    "Tabs/ScrollbarSize.js",
+    "Tabs/Tabs.js",
+    "Tabs/tabsClasses.ts",
+    "Tab/Tab.js",
+    "Tab/tabClasses.ts",
+    "TabScrollButton/TabScrollButton.js",
+    "TabScrollButton/tabScrollButtonClasses.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx, react-is"
+  },
+  "instance": {
+   "lines": 47,
+   "files": [
+    "tabs.is"
+   ],
+   "deps": [],
+   "note": "one class"
+  }
+ },
+ "progress": {
+  "shadcn": {
+   "lines": 290,
+   "files": [
+    "progress.tsx",
+    "badge.tsx",
+    "alert.tsx",
+    "skeleton.tsx",
+    "avatar.tsx",
+    "separator.tsx",
+    "kbd.tsx"
+   ],
+   "deps": "class-variance-authority, cn (clsx + tailwind-merge), radix-ui"
+  },
+  "mui": {
+   "lines": 2843,
+   "files": [
+    "LinearProgress/LinearProgress.js",
+    "LinearProgress/linearProgressClasses.ts",
+    "Chip/Chip.js",
+    "Chip/chipClasses.ts",
+    "Alert/Alert.js",
+    "Alert/alertClasses.ts",
+    "AlertTitle/AlertTitle.js",
+    "AlertTitle/alertTitleClasses.ts",
+    "Skeleton/Skeleton.js",
+    "Skeleton/skeletonClasses.ts",
+    "Avatar/Avatar.js",
+    "Avatar/avatarClasses.ts",
+    "Divider/Divider.js",
+    "Divider/dividerClasses.ts"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx"
+  },
+  "instance": {
+   "lines": 21,
+   "files": [
+    "native.css · Progress · Badge · Alert · Skeleton · Avatar · Separator"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ },
+ "card": {
+  "shadcn": {
+   "lines": 404,
+   "files": [
+    "card.tsx",
+    "table.tsx",
+    "breadcrumb.tsx",
+    "pagination.tsx"
+   ],
+   "deps": "cn (clsx + tailwind-merge), lucide-react, radix-ui"
+  },
+  "mui": {
+   "lines": 2806,
+   "files": [
+    "Card/Card.js",
+    "Card/cardClasses.ts",
+    "CardHeader/CardHeader.js",
+    "CardHeader/cardHeaderClasses.ts",
+    "CardContent/CardContent.js",
+    "CardContent/cardContentClasses.ts",
+    "CardActions/CardActions.js",
+    "CardActions/cardActionsClasses.ts",
+    "Table/Table.js",
+    "Table/TableContext.js",
+    "Table/Tablelvl2Context.js",
+    "Table/tableClasses.ts",
+    "TableHead/TableHead.js",
+    "TableHead/tableHeadClasses.ts",
+    "TableBody/TableBody.js",
+    "TableBody/tableBodyClasses.ts",
+    "TableRow/TableRow.js",
+    "TableRow/tableRowClasses.ts",
+    "TableCell/TableCell.js",
+    "TableCell/tableCellClasses.ts",
+    "TableContainer/TableContainer.js",
+    "TableContainer/tableContainerClasses.ts",
+    "Breadcrumbs/BreadcrumbCollapsed.js",
+    "Breadcrumbs/Breadcrumbs.js",
+    "Breadcrumbs/breadcrumbsClasses.ts",
+    "Pagination/Pagination.js",
+    "Pagination/paginationClasses.ts",
+    "PaginationItem/PaginationItem.js",
+    "PaginationItem/paginationItemClasses.ts",
+    "usePagination/usePagination.js"
+   ],
+   "deps": "@mui/system, @mui/utils, clsx, react-is"
+  },
+  "instance": {
+   "lines": 19,
+   "files": [
+    "native.css · Card · Table · Breadcrumb · Pagination"
+   ],
+   "deps": [],
+   "note": "CSS only, no script"
+  }
+ }
+}

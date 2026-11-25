@@ -1,0 +1,53 @@
+/* Instance-UI · Tabs
+ * The platform has no tabs, so this is a class: one element, its own tag, ARIA as the APG writes it (tablist, tab,
+ * tabpanel, a roving tabindex, arrows and Home/End), one field of state. Write it as markup —
+ *
+ *   <tabs>
+ *     <nav><button>Account</button><button>Password</button></nav>
+ *     <section>…account…</section>
+ *     <section>…password…</section>
+ *   </tabs>
+ *
+ * — or as a call: tabs(nav(button('Account'), button('Password')), section(…), section(…)). The first child is the
+ * list of tabs, every later child a panel, in order. `active` is the selected index; set it and the tabs follow. */
+class Tabs extends Instance {
+	active = 0;
+
+	static get css() { return [super.css, `
+		display: block;
+		> nav { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--ui-radius); background: var(--ui-muted);
+			> button { height: 30px; padding: 0 12px; border: 0; border-radius: calc(var(--ui-radius) - 2px); background: transparent;
+				color: var(--ui-muted-foreground); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+				&[aria-selected=true] { background: var(--ui-background); color: var(--ui-foreground); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+				&:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: 1px; } } }
+		> section { padding: 16px 0; font-size: 14px; &[hidden] { display: none; } }
+	`]; }
+
+	['@mount']() {
+		this.querySelector(':scope > nav')?.setAttribute('role', 'tablist');
+		this.tabs.forEach((tab, i) => { tab.setAttribute('role', 'tab'); tab.type = 'button'; tab.id ||= `${this.id || 'tabs'}-tab-${i}`; });
+		this.panels.forEach((panel, i) => { panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', this.tabs[i]?.id ?? ''); });
+	}
+
+	get tabs() { return [...this.querySelectorAll(':scope > nav > button')]; }
+	get panels() { return [...this.children].slice(1); }
+
+	active show() {
+		const n = this.active;
+		this.tabs.forEach((tab, i) => { tab.setAttribute('aria-selected', String(i === n)); tab.tabIndex = i === n ? 0 : -1; });
+		this.panels.forEach((panel, i) => { panel.hidden = i !== n; });
+	}
+
+	['@click > nav > button'](e, tab) { this.active = this.tabs.indexOf(tab); }
+
+	['@keydown > nav > button'](e, tab) {
+		const tabs = this.tabs, i = tabs.indexOf(tab), last = tabs.length - 1;
+		const next = { ArrowRight: i === last ? 0 : i + 1, ArrowLeft: i === 0 ? last : i - 1, Home: 0, End: last }[e.key];
+		if (next === undefined) return;
+		e.preventDefault();
+		this.active = next;
+		tabs[next].focus();
+	}
+}
+Instance.define(Tabs);                                            // the tag, for markup that is already on the page…
+for (const el of document.querySelectorAll('tabs')) Instance.upgrade(el);   // …which was parsed before this file ran

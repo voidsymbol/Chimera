@@ -1,0 +1,30 @@
+/* Instance-UI · tokens
+ * One set of custom properties, light and dark through color-scheme and light-dark(): no theme provider, no class on
+ * <html>, no JavaScript. The names follow shadcn's (background, foreground, primary, muted, accent, destructive, border,
+ * ring, radius), so a palette written for shadcn ports by search and replace. Override any of them on :root or on a
+ * subtree; a component reads them where it stands. */
+:root {
+	color-scheme: light dark;
+	--ui-background: light-dark(#ffffff, #0e0f12);
+	--ui-foreground: light-dark(#0f1419, #e6ebf0);
+	--ui-card: light-dark(#ffffff, #14161b);
+	--ui-muted: light-dark(#f3f4f6, #171a1f);
+	--ui-muted-foreground: light-dark(#667085, #8a94a3);
+	--ui-border: light-dark(#e4e7ec, #262a31);
+	--ui-input: light-dark(#e4e7ec, #2c3038);
+	--ui-primary: light-dark(#111827, #e6ebf0);
+	--ui-primary-foreground: light-dark(#ffffff, #0e0f12);
+	--ui-secondary: light-dark(#f3f4f6, #1c2026);
+	--ui-secondary-foreground: light-dark(#111827, #e6ebf0);
+	--ui-accent: light-dark(#f3f4f6, #1c2026);
+	--ui-accent-foreground: light-dark(#111827, #e6ebf0);
+	--ui-destructive: light-dark(#dc2626, #d0607a);
+	--ui-destructive-foreground: #ffffff;
+	--ui-ring: light-dark(#111827, #8ab4f8);
+	--ui-radius: 8px;
+	--ui-font: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--ui-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	--ui-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 8px 24px rgb(0 0 0 / .12);
+}
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark; }
